@@ -1,0 +1,9 @@
+version: '3'
+    
+services:
+  user:
+    build: ./user/
+    volumes:
+      - ./user/:/code
+    ports:
+      - "5000:5000"

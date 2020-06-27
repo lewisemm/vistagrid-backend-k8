@@ -1,0 +1,5 @@
+# Ignore virtual environment files
+venv
+
+# Ignore node_modules
+node_modules
