@@ -1,9 +1,17 @@
 version: '3'
     
 services:
+  db:
+    image: postgres:9.6.17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: vistagrid
   user:
-    build: ./user/
+    build: ./user_service/
+    environment:
+      SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
     volumes:
-      - ./user/:/code
+      - ./user_service/:/code
     ports:
       - "5000:5000"
