@@ -1,0 +1,12 @@
+# Ignore virtual environment files
+venv/
+
+# Ignore cached files
+__pycache__
+.pytest_cache
+
+# Ignore compiled files
+*.pyc
+
+# Ignore sqlite database file
+*.sqlite3
