@@ -1,17 +1,26 @@
 FROM python:3.7
 
-RUN mkdir /code
+# create a migrations folder for migrations to be mounted as a volume
+# in the user service (defined in docker-compose.yml)
+RUN mkdir -p /user_service/migrations
 
-WORKDIR /code
+WORKDIR /user_service/
 
-COPY requirements.txt /code/
+COPY requirements.txt /user_service/
 
 RUN pip install -r requirements.txt
 
-COPY . /code/
+COPY . /user_service/
 
 EXPOSE 5000
 
-ENV FLASK_APP=api.py
+ENV FLASK_APP=api
 
-CMD [ "python", "-m", "flask", "run", "--host=0.0.0.0"]
+# pg_ready command is installed through this package.
+# The command will be used to poll the "db" container to check if postgres is
+# ready to accept connections. When ready, migrations will be run.
+RUN apt-get update && apt-get install -f -y postgresql-client
+
+RUN chown root:root /user_service/docker-entrypoint.sh && chmod 755 /user_service/docker-entrypoint.sh
+
+ENTRYPOINT ./docker-entrypoint.sh

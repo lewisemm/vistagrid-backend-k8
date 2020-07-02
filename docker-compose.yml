@@ -12,6 +12,8 @@ services:
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
     volumes:
-      - ./user_service/:/code
+      - ./migrations:/user_service/migrations
     ports:
       - "5000:5000"
+    depends_on:
+      - db
