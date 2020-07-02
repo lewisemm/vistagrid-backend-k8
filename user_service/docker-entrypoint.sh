@@ -11,13 +11,9 @@ done
 
 echo "The environment is: $ENVIRONMENT"
 
-if [ "$ENVIRONMENT" == "TESTING" ]; then
-  pytest
-else
-  # Apply database migrations
-  flask db upgrade
+# Apply database migrations
+flask db upgrade
 
-  # Start server
-  echo "Starting server"
-  python -m flask run --host=0.0.0.0
-fi
+# Start server
+echo "Starting server"
+python -m flask run --host=0.0.0.0
