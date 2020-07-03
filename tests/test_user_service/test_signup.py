@@ -26,17 +26,21 @@ def client():
     os.unlink(temp_path)
 
 
-def test_signup(client):
-    data = {
+@pytest.fixture
+def credentials():
+    return {
         'username': fake.user_name(),
         'password': fake.password()
     }
+
+
+def test_signup(client, credentials):
     res = client.post(
-        '/api/user', data=json.dumps(data), content_type='application/json')
+        '/api/user', data=json.dumps(credentials), content_type='application/json')
     assert res.status_code == 201
     # assert that user has been persisted in the database
     saved_user = models.User.query.all()[0]
-    assert saved_user.username == data['username']
+    assert saved_user.username == credentials['username']
     # assert that the password has not been persisted in plain-text form
     assert saved_user.password != credentials['password']
 
