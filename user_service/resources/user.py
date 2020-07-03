@@ -25,10 +25,10 @@ class User(Resource):
         return USER_NOT_FOUND, 404
 
     def put(self, user_id):
-        user = UserModel.query.get(user_id)
         args = self.parser.parse_args()
-        hashed_password = user.hash_password(args['password'])
+        user = UserModel.query.get(user_id)
         if user:
+            hashed_password = user.hash_password(args['password'])
             user.password = hashed_password or user.password
             db.session.add(user)
             db.session.commit()
