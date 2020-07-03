@@ -6,5 +6,6 @@ env:
   - SQLALCHEMY_DATABASE_URI='sqlite:///test.sqlite3'
 install:
   - pip install -r user_service/requirements.txt
+  - pip install coveralls
 script:
-  - pytest
+  - coverage run -m pytest
