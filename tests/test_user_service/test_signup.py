@@ -1,29 +1,12 @@
 import json
-import os
 import pytest
-import tempfile
 
 from faker import Faker
 
-from user_service.api import api
 from user_service import models
+from tests.client_fixture import client
 
 fake = Faker()
-
-
-@pytest.fixture
-def client():
-    db_fd, temp_path = tempfile.mkstemp()
-    api.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{temp_path}'
-    api.app.config['TESTING'] = True
-    models.db.create_all()
-
-    with api.app.test_client() as client:
-        # with api.app.app_context():
-        #     api.init_db()
-        yield client
-    os.close(db_fd)
-    os.unlink(temp_path)
 
 
 @pytest.fixture
@@ -36,7 +19,10 @@ def credentials():
 
 def test_signup(client, credentials):
     res = client.post(
-        '/api/user', data=json.dumps(credentials), content_type='application/json')
+        '/api/user',
+        data=json.dumps(credentials),
+        content_type='application/json'
+    )
     assert res.status_code == 201
     # assert that user has been persisted in the database
     saved_user = models.User.query.all()[0]
