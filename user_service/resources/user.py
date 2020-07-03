@@ -29,9 +29,15 @@ class UserList(Resource):
             required=True
         )
 
+    def user_exists(self, username):
+        user = UserModel.query.filter_by(username=username).first()
+        return True if user else False
+
     def post(self):
         args = self.parser.parse_args()
+        if self.user_exists(args['username']):
+            return {'error': f'User {args["username"]} already exists.'}, 409
         new_user = UserModel(**args)
         db.session.add(new_user)
         db.session.commit()
-        return 'made', 201
+        return {'success': f'User {args["username"]} successfully created'}, 201
