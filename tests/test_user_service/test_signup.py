@@ -76,3 +76,16 @@ def test_signup_missing_username_and_password(client):
     # assert that database has remained unchanged
     saved_user = models.User.query.all()
     assert len(saved_user) == 0
+
+
+def test_signup_when_user_already_exists(client, credentials):
+    existing_user = models.User(**credentials)
+    models.db.session.add(existing_user)
+    models.db.session.commit()
+
+    res = client.post(
+        'api/user',
+        data=json.dumps(credentials),
+        content_type='application/json'
+    )
+    assert res.status_code == 409
