@@ -18,10 +18,14 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
-    def hash_password(plain_text_passwd):
-        self.password = bcrypt.hash(plain_text_passwd)
+    def __init__(self, username, password):
+        self.username = username
+        self.password = self.hash_password(password)
 
-    def verify_password(plain_text_passwd):
+    def hash_password(self, plain_text_passwd):
+        return bcrypt.hash(plain_text_passwd)
+
+    def verify_password(self, plain_text_passwd):
         return bcrypt.verify(plain_text_passwd, self.password)
 
     def __repr__(self):

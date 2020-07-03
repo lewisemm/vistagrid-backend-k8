@@ -38,7 +38,7 @@ def test_signup(client):
     saved_user = models.User.query.all()[0]
     assert saved_user.username == data['username']
     # assert that the password has not been persisted in plain-text form
-    assert saved_user.password == data['password']
+    assert saved_user.password != credentials['password']
 
 
 def test_signup_missing_username(client):
