@@ -1,2 +1,2 @@
 [report]
-omit = */migrations/*, *site-packages*
+omit = */migrations/*, *virtualenv*
