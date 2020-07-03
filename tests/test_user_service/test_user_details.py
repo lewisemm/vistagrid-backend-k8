@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from faker import Faker
@@ -41,3 +42,35 @@ def test_delete_user(client, existing_user):
 def test_delete_user_404(client):
     res = client.delete(f'/api/user/42')
     assert res.status_code == 404
+
+
+def test_edit_user_details(client, existing_user):
+    data = {'password': fake.password()}
+    res = client.put(
+        f'/api/user/{existing_user.user_id}',
+        data=json.dumps(data),
+        content_type='application/json'
+    )
+    assert res.status_code == 200
+    # assert that the password in the data dictionary above is the new password
+    assert existing_user.verify_password(data['password']) is True
+
+
+def test_edit_user_details_404(client):
+    data = {'password': fake.password()}
+    res = client.put(
+        '/api/user/42',
+        data=json.dumps(data),
+        content_type='application/json'
+    )
+    assert res.status_code == 404
+
+
+def test_edit_user_details_missing_password_field(client, existing_user):
+    data = {'random_field': fake.password()}
+    res = client.put(
+        f'/api/user/{existing_user.user_id}',
+        data=json.dumps(data),
+        content_type='application/json'
+    )
+    assert res.status_code == 400
