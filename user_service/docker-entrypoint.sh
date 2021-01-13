@@ -9,8 +9,6 @@ done
 
 >&2 echo "Postgres is up - executing command"
 
-echo "The environment is: $ENVIRONMENT"
-
 # Apply database migrations
 flask db upgrade
 
