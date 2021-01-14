@@ -11,6 +11,7 @@ services:
     build: ./user_service/
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
+      JWT_SECRET_KEY: 'super-secret'
     volumes:
       - ./migrations:/user_service/migrations
     ports:
