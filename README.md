@@ -3,6 +3,14 @@
 # vistagrid-backend-k8
 
 ## Setup and Install Instructions
+
+
+### Prerequisite Environment Variables
+This project requires the following environment variables to be defined in order to run.
+* SQLALCHEMY_DATABASE_URI
+* JWT_SECRET_KEY
+
+### Running the project
 1. Open terminal and navigate to your projects directory.
 
 ```sh
