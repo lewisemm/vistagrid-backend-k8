@@ -25,7 +25,6 @@ def existing_user():
 def test_get_user_details(client, existing_user):
     res = client.get(f'/api/user/{existing_user.user_id}')
     assert res.status_code == 200
-    # import pdb; pdb.set_trace()
     assert existing_user.username in res.data.decode('utf-8')
 
 

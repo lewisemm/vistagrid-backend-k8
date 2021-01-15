@@ -2,6 +2,8 @@ import os
 import pytest
 import tempfile
 
+os.environ['CONFIG_MODULE'] = 'user_service.config.test.TestConfig'
+
 from user_service import models
 from user_service.api import api
 
@@ -10,7 +12,6 @@ from user_service.api import api
 def client():
     db_fd, temp_path = tempfile.mkstemp()
     api.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{temp_path}'
-    api.app.config['TESTING'] = True
     models.db.create_all()
 
     with api.app.test_client() as client:
