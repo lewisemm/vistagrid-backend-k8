@@ -8,7 +8,6 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: vistagrid
   user:
-    build: ./user_service/
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
       JWT_SECRET_KEY: 'super-secret'
