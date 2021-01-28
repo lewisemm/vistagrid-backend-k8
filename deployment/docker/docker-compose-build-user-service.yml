@@ -2,5 +2,5 @@ version: '3'
 services:
   user:
     build:
-      context: ../../user_service/
+      context: ./user_service/
     image: lewisemm/userservice
