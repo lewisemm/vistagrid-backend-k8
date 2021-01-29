@@ -1,5 +1,4 @@
 version: '3'
-    
 services:
   db:
     image: postgres:9.6.17-alpine
@@ -8,13 +7,10 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: vistagrid
   user:
-    build: ./user_service/
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
       JWT_SECRET_KEY: 'super-secret'
       CONFIG_MODULE: user_service.config.config.DevConfig
-    volumes:
-      - ./migrations:/user_service/migrations
     ports:
       - "5000:5000"
     depends_on:

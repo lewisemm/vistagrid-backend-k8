@@ -1,4 +1,3 @@
-
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
 
@@ -15,6 +14,6 @@ def hello_world():
     return 'Hello, World!\n'
 
 
-api.add_resource(UserAuth, '/api/auth')
-api.add_resource(UserList, '/api/user')
+api.add_resource(UserAuth, '/api/user/auth')
 api.add_resource(UserResource, '/api/user/<int:user_id>')
+api.add_resource(UserList, '/api/user')

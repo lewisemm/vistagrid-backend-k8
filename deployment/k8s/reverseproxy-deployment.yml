@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: reverseproxy-deployment
+  name: reverseproxy-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: reverseproxy-deployment
+  template:
+    metadata:
+      labels:
+        service: reverseproxy-deployment
+    spec:
+      containers:
+      - image: lewisemm/vistagrid-k8-reverseproxy:v0.4
+        name: reverseproxy
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+        ports:
+        - containerPort: 5000

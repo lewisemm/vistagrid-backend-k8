@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: user-deployment
+  name: user-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: user-deployment
+  template:
+    metadata:
+      labels:
+        service: user-deployment
+    spec:
+      containers:
+      - image: lewisemm/userservice:v0.2
+        name: userservice
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+        env:
+        - name: SQLALCHEMY_DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: env-secret
+              key: SQLALCHEMY_DATABASE_URI
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: env-secret
+              key: JWT_SECRET_KEY
+        - name: CONFIG_MODULE
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: CONFIG_MODULE
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: POSTGRES_HOST
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: POSTGRES_DB
