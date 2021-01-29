@@ -3,4 +3,4 @@ services:
   user:
     build:
       context: ./user_service/
-    image: lewisemm/userservice
+    image: lewisemm/userservice:v0.2
