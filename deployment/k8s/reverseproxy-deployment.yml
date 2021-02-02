@@ -15,7 +15,7 @@ spec:
         service: reverseproxy-deployment
     spec:
       containers:
-      - image: lewisemm/vistagrid-k8-reverseproxy:v0.4
+      - image: lewisemm/vistagrid-k8-reverseproxy:v0.5
         name: reverseproxy
         resources:
           requests:
