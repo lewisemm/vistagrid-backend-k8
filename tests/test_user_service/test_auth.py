@@ -25,7 +25,7 @@ def existing_user(credentials):
 
 def test_jwt_auth(client, existing_user, credentials):
     res = client.post(
-        '/api/auth',
+        '/api/user/auth',
         data=json.dumps(credentials),
         content_type='application/json'
     )
@@ -34,7 +34,7 @@ def test_jwt_auth(client, existing_user, credentials):
 
 def test_jwt_auth_missing_username(client, existing_user, credentials):
     res = client.post(
-        '/api/auth',
+        '/api/user/auth',
         data=json.dumps({
             'password': credentials['password']
         }),
@@ -46,7 +46,7 @@ def test_jwt_auth_missing_username(client, existing_user, credentials):
 def test_jwt_auth_missing_password(client, existing_user, credentials):
     credentials.pop('password')
     res = client.post(
-        '/api/auth',
+        '/api/user/auth',
         data=json.dumps({
             'username': credentials['username']
         }),
@@ -57,7 +57,7 @@ def test_jwt_auth_missing_password(client, existing_user, credentials):
 
 def test_jwt_auth_non_existent_user(client, credentials):
     res = client.post(
-        '/api/auth',
+        '/api/user/auth',
         data=json.dumps(credentials),
         content_type='application/json'
     )
@@ -67,7 +67,7 @@ def test_jwt_auth_non_existent_user(client, credentials):
 
 def test_jwt_auth_wrong_password(client, existing_user, credentials):
     res = client.post(
-        '/api/auth',
+        '/api/user/auth',
         data=json.dumps({
             'username': credentials['username'],
             'password': fake.password()
