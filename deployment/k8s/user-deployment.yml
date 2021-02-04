@@ -32,11 +32,11 @@ spec:
             secretKeyRef:
               name: env-secret
               key: JWT_SECRET_KEY
-        - name: CONFIG_MODULE
+        - name: USER_SERVICE_CONFIG_MODULE
           valueFrom:
             configMapKeyRef:
               name: env-config
-              key: CONFIG_MODULE
+              key: USER_SERVICE_CONFIG_MODULE
         - name: POSTGRES_PASSWORD
           valueFrom:
             configMapKeyRef:

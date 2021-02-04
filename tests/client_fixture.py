@@ -2,7 +2,7 @@ import os
 import pytest
 import tempfile
 
-os.environ['CONFIG_MODULE'] = 'user_service.config.test.TestConfig'
+os.environ['USER_SERVICE_CONFIG_MODULE'] = 'user_service.config.test.TestConfig'
 
 from user_service import models
 from user_service.api import api
