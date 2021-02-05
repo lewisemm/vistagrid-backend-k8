@@ -3,25 +3,14 @@ import pytest
 
 from faker import Faker
 
-from tests.client_fixture import client
+from tests.fixtures.common import (
+    client,
+    credentials,
+    existing_user
+)
 from user_service import models
 
 fake = Faker()
-
-@pytest.fixture
-def credentials():
-    return {
-        'username': fake.user_name(),
-        'password': fake.password()
-    }
-
-
-@pytest.fixture
-def existing_user(credentials):
-    user = models.User(**credentials)
-    models.db.session.add(user)
-    models.db.session.commit()
-    return user
 
 def test_jwt_auth(client, existing_user, credentials):
     res = client.post(

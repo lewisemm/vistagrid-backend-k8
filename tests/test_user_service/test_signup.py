@@ -4,10 +4,12 @@ import pytest
 from faker import Faker
 
 from user_service import models
-from tests.client_fixture import client
+from tests.fixtures.common import (
+    client,
+    credentials
+)
 
 fake = Faker()
-
 
 @pytest.fixture
 def credentials():
