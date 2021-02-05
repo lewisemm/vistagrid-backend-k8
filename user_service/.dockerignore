@@ -10,3 +10,8 @@ __pycache__
 
 # Ignore sqlite database file
 *.sqlite3
+
+# These should only be relevant during development.
+# Image will be built once the tests pass.
+# Image will also be smaller in size with exclusion of tests.
+tests/

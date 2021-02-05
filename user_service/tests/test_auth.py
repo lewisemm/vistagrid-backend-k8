@@ -3,7 +3,7 @@ import pytest
 
 from faker import Faker
 
-from tests.fixtures.common import (
+from user_service.tests.fixtures.common import (
     client,
     credentials,
     existing_user
