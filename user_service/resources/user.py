@@ -1,13 +1,18 @@
 from flask import jsonify
 from flask_restful import reqparse, Resource
+from flask_apispec import use_kwargs, marshal_with, doc
+from flask_apispec.views import MethodResource
 
 from user_service.models import User as UserModel, db
-from user_service.schemas.user import UserSchema
+from user_service.schemas.user import UserSchema, PasswordSchema
 
 USER_NOT_FOUND = {'error': 'User not found'}
 
 
-class User(Resource):
+class User(MethodResource, Resource):
+    """
+    FETCH, UPDATE user details, or DELETE a User.
+    """
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument(
@@ -18,13 +23,18 @@ class User(Resource):
         )
         self.user_schema = UserSchema()
 
+    @doc(description='Get user details for User with <user_id>.')
+    @marshal_with(UserSchema, code=201)
     def get(self, user_id):
         user = UserModel.query.get(user_id)
         if user:
             return self.user_schema.dump(user), 200
         return USER_NOT_FOUND, 404
 
-    def put(self, user_id):
+    @doc(description='Update password for User with <user_id>.')
+    @use_kwargs(PasswordSchema, location=('json'))
+    @marshal_with(UserSchema, code=200)
+    def put(self, user_id, **kwargs):
         args = self.parser.parse_args()
         user = UserModel.query.get(user_id)
         if user:
@@ -35,6 +45,8 @@ class User(Resource):
             return {'success': 'password successfully updated.'}, 200
         return USER_NOT_FOUND, 404
 
+    @doc(description='Delete User with <user_id>.')
+    @marshal_with(UserSchema, code=204)
     def delete(self, user_id):
         user = UserModel.query.get(user_id)
         if user:
