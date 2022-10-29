@@ -75,4 +75,4 @@ def test_edit_user_details_missing_password_field(client, existing_user):
         data=json.dumps(data),
         content_type='application/json'
     )
-    assert res.status_code == 400
+    assert res.status_code == 422
