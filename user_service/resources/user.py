@@ -56,7 +56,7 @@ class User(MethodResource, Resource):
         return USER_NOT_FOUND, 404
 
 
-class UserList(Resource):
+class UserList(MethodResource, Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument(
@@ -76,6 +76,9 @@ class UserList(Resource):
         user = UserModel.query.filter_by(username=username).first()
         return True if user else False
 
+    @doc(description='Create a new user with `username` and `password` data.')
+    @use_kwargs(UserSchema, location=('json'))
+    @marshal_with(UserSchema, code=201)
     def post(self):
         args = self.parser.parse_args()
         if self.user_exists(args['username']):
@@ -83,6 +86,4 @@ class UserList(Resource):
         new_user = UserModel(**args)
         db.session.add(new_user)
         db.session.commit()
-        return {
-            'success': f'User {args["username"]} successfully created'
-        }, 201
+        return self.user_schema.dump(new_user), 201
