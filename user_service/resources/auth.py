@@ -1,3 +1,5 @@
+from flask_apispec.views import MethodResource
+from flask_apispec import use_kwargs, marshal_with, doc
 from flask_jwt_extended import (
     create_access_token,
     jwt_required,
@@ -5,9 +7,10 @@ from flask_jwt_extended import (
 )
 from flask_restful import reqparse, Resource
 from user_service.models import User as UserModel
+from user_service.schemas.user import UserSchema, TokenSchema
 
 
-class UserAuth(Resource):
+class UserAuth(MethodResource, Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument(
@@ -27,7 +30,10 @@ class UserAuth(Resource):
         user = UserModel.query.filter_by(username=username).first()
         return user
 
-    def post(self):
+    @doc(description='Authenticate a User with `username` and `password` details.')
+    @use_kwargs(UserSchema, location=('json'))
+    @marshal_with(TokenSchema, code=200)
+    def post(self, **kwargs):
         args = self.parser.parse_args()
         user = self.user_exists(args['username'])
         if user is None:
@@ -38,7 +44,8 @@ class UserAuth(Resource):
             }, 401
         access_token = create_access_token(identity=user.user_id)
         return {'access_token': access_token}, 200
-    
+
+    @doc(description='Get `username` of current authenticated request.')
     @jwt_required
     def get(self):
         try:

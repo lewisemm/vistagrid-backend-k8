@@ -34,3 +34,4 @@ api.add_resource(UserList, '/api/user')
 
 docs.register(UserResource)
 docs.register(UserList)
+docs.register(UserAuth)
