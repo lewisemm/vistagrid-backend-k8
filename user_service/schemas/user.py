@@ -1,10 +1,9 @@
-from flask_marshmallow import Marshmallow
-
-from user_service.application import app
-
-ma = Marshmallow(app)
-
+import marshmallow as ma
 
 class UserSchema(ma.Schema):
-    class Meta:
-        fields = ('username',)
+    username = ma.fields.Str()
+    password = ma.fields.Str(load_only=True)
+
+
+class PasswordSchema(ma.Schema):
+    password = ma.fields.Str(required=True)
