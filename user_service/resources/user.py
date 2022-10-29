@@ -21,14 +21,13 @@ class User(MethodResource, Resource):
             help='password field is required.',
             required=True
         )
-        self.user_schema = UserSchema()
 
     @doc(description='Get user details for User with <user_id>.')
     @marshal_with(UserSchema, code=201)
     def get(self, user_id):
         user = UserModel.query.get(user_id)
         if user:
-            return self.user_schema.dump(user), 200
+            return UserSchema().dump(user), 200
         return USER_NOT_FOUND, 404
 
     @doc(description='Update password for User with <user_id>.')
@@ -79,11 +78,11 @@ class UserList(MethodResource, Resource):
     @doc(description='Create a new user with `username` and `password` data.')
     @use_kwargs(UserSchema, location=('json'))
     @marshal_with(UserSchema, code=201)
-    def post(self):
+    def post(self, **kwargs):
         args = self.parser.parse_args()
         if self.user_exists(args['username']):
             return {'error': f'User {args["username"]} already exists.'}, 409
         new_user = UserModel(**args)
         db.session.add(new_user)
         db.session.commit()
-        return self.user_schema.dump(new_user), 201
+        return UserSchema().dump(new_user), 201
