@@ -28,10 +28,10 @@ def hello_world():
     return 'Hello, World!\n'
 
 
-api.add_resource(UserAuth, '/api/user/auth')
-api.add_resource(UserResource, '/api/user/<int:user_id>')
-api.add_resource(UserList, '/api/user')
+api.add_resource(UserAuth, '/api/user/auth', endpoint='user-auth')
+api.add_resource(UserResource, '/api/user/<int:user_id>', endpoint='user-detail')
+api.add_resource(UserList, '/api/user', endpoint='user-list')
 
-docs.register(UserResource)
-docs.register(UserList)
-docs.register(UserAuth)
+docs.register(UserResource, endpoint='user-detail')
+docs.register(UserList, endpoint='user-list')
+docs.register(UserAuth, endpoint='user-auth')
