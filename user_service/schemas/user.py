@@ -7,3 +7,6 @@ class UserSchema(ma.Schema):
 
 class PasswordSchema(ma.Schema):
     password = ma.fields.Str(required=True)
+
+class TokenSchema(ma.Schema):
+    access_token = ma.fields.Str(required=True)
