@@ -64,7 +64,7 @@ def test_signup_missing_username_and_password(client):
     }
     res = client.post(
         '/api/user', data=json.dumps(data), content_type='application/json')
-    assert res.status_code == 400
+    assert res.status_code == 422
     # assert that database has remained unchanged
     saved_user = models.User.query.all()
     assert len(saved_user) == 0
