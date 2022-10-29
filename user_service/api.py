@@ -20,6 +20,7 @@ app.config.update({
     'APISPEC_SWAGGER_URL': '/swagger/',
     'APISPEC_SWAGGER_UI_URL': '/swagger-ui/'
 })
+docs = FlaskApiSpec(app)
 
 
 @app.route('/')
@@ -30,3 +31,5 @@ def hello_world():
 api.add_resource(UserAuth, '/api/user/auth')
 api.add_resource(UserResource, '/api/user/<int:user_id>')
 api.add_resource(UserList, '/api/user')
+
+docs.register(UserResource)
