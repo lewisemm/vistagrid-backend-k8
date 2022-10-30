@@ -8,6 +8,7 @@
 * POSTGRES_HOST
 * POSTGRES_DB
 * FLASK_APP
+* SERVER_NAME
 
 ### Database Migrations
 Run the following command to initialize the database.
