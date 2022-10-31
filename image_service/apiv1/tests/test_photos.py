@@ -17,7 +17,7 @@ class TestPhotos(TestCase):
 
     def generate_random_fake_photo_entries(self):
         # create fake entries
-        count = int(random.random() * 10)
+        count = int(random.random() * 10) + 1
         photo_ids = []
         for i in range(count):
             data = {
