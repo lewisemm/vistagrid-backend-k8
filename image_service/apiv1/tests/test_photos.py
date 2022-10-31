@@ -15,6 +15,20 @@ class TestPhotos(TestCase):
         del self.client
         del self.fake
 
+    def generate_random_fake_photo_entries(self):
+        # create fake entries
+        count = int(random.random() * 10)
+        photo_ids = []
+        for i in range(count):
+            data = {
+                'path': self.fake.file_name(),
+                'owner_id': int(random.random() * 1000)
+            }
+            photo = models.Photo(**data)
+            photo.save()
+            photo_ids.append(photo.photo_id)
+        return count, photo_ids
+
     def test_post_photo(self):
         """
         Test photo create functionality.
@@ -34,14 +48,7 @@ class TestPhotos(TestCase):
         self.assertEqual(photos[0].path, data['path'])
 
     def test_get_photo_list(self):
-        # create fake entries
-        count = int(random.random() * 10)
-        for i in range(count):
-            data = {
-                'path': self.fake.file_name(),
-                'owner_id': int(random.random() * 1000)
-            }
-            models.Photo(**data).save()
+        count, _ = self.generate_random_fake_photo_entries()
         url = reverse('photo-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
