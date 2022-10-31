@@ -54,3 +54,12 @@ class TestPhotos(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data), count)
+
+    def test_get_photo_detail(self):
+        count, photo_ids = self.generate_random_fake_photo_entries()
+        random_id = random.choice(photo_ids)
+        random_photo = models.Photo.objects.get(pk=random_id)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(random_photo.path, data['path'])
