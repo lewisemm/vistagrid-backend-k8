@@ -82,3 +82,13 @@ class TestPhotos(TestCase):
         random_photo.refresh_from_db()
         # old data updated to new data
         self.assertEqual(random_photo.path, data['path'])
+
+    def test_delete_photo(self):
+        count, photo_ids = self.generate_random_fake_photo_entries()
+        random_id = random.choice(photo_ids)
+        random_photo = models.Photo.objects.get(pk=random_id)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        photos = models.Photo.objects.all()
+        self.assertEqual(count - 1, len(photos))
