@@ -35,6 +35,9 @@ jobs:
   test_image_service:
     name: Test image_service
     runs-on: ubuntu-latest
+    defaults:
+      runs:
+        working-directory: image_service
     env:
       DJANGO_SETTINGS_MODULE: 'image_service.settings.dev_settings'
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
