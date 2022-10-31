@@ -32,3 +32,18 @@ class TestPhotos(TestCase):
         photos = models.Photo.objects.all()
         self.assertEqual(len(photos), 1)
         self.assertEqual(photos[0].path, data['path'])
+
+    def test_get_photo_list(self):
+        # create fake entries
+        count = int(random.random() * 10)
+        for i in range(count):
+            data = {
+                'path': self.fake.file_name(),
+                'owner_id': int(random.random() * 1000)
+            }
+            models.Photo(**data).save()
+        url = reverse('photo-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), count)
