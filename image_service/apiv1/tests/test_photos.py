@@ -62,6 +62,7 @@ class TestPhotos(TestCase):
         url = reverse('photo-detail', kwargs={'pk': random_id})
         response = self.client.get(url)
         data = response.json()
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(random_photo.path, data['path'])
 
     def test_put_photo(self):
