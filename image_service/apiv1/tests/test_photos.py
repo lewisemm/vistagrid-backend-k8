@@ -63,3 +63,22 @@ class TestPhotos(TestCase):
         response = self.client.get(url)
         data = response.json()
         self.assertEqual(random_photo.path, data['path'])
+
+    def test_put_photo(self):
+        _, photo_ids = self.generate_random_fake_photo_entries()
+        random_id = random.choice(photo_ids)
+        random_photo = models.Photo.objects.get(pk=random_id)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        new_data = {
+            'path': self.fake.file_name()
+        }
+        # old data not equal to new (incoming) data
+        print(f'old: {random_photo.path}, new: {new_data["path"]}')
+        self.assertNotEqual(random_photo.path, new_data['path'])
+        response = self.client.put(url, new_data, content_type='application/json')
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        # fetch updated data from db
+        random_photo.refresh_from_db()
+        # old data updated to new data
+        self.assertEqual(random_photo.path, data['path'])
