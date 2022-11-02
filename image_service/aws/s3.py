@@ -9,10 +9,8 @@ class S3Operations:
         bucket_name = os.environ['S3_BUCKET']
         self.bucket = s3.Bucket(bucket_name)
 
-    def upload_photo(self, parent_dir, filename):
-        filepath = f'{parent_dir}{filename}'
-        binary_data = open(filepath, 'rb')
-        bucket.put_object(Key=filename, Body=binary_data)
+    def upload_photo(self, binary_data, filename):
+        self.bucket.put_object(Key=filename, Body=binary_data)
     
     def list_bucket_objects(self):
         count = 1
