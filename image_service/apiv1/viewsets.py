@@ -27,4 +27,4 @@ class PhotoViewSet(viewsets.ModelViewSet):
                 serializers.PhotoSerializer(photo).data,
                 status=status.HTTP_201_CREATED
             )
-        return Response(serializer.errors, status=status.HTTP_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
