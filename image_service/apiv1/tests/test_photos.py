@@ -54,7 +54,7 @@ class TestPhotos(TestCase):
         self.assertEqual(len(photos), 0)
         url = reverse('photo-list')
         data = {
-            'path': self.fake.file_name()
+            'image': self.get_uploaded_test_png()
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 201)
@@ -87,7 +87,7 @@ class TestPhotos(TestCase):
         random_photo = models.Photo.objects.get(pk=random_id)
         url = reverse('photo-detail', kwargs={'pk': random_id})
         new_data = {
-            'path': self.fake.file_name()
+            'image': self.get_uploaded_test_png()
         }
         # old data not equal to new (incoming) data
         print(f'old: {random_photo.path}, new: {new_data["path"]}')
