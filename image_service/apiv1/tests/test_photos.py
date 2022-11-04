@@ -60,12 +60,12 @@ class TestPhotos(APITestCase):
         data = {
             'image': self.get_uploaded_test_png()
         }
-        response = self.client.post(url, data)
+        response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, 201)
         # assert photo exists
         photos = models.Photo.objects.all()
         self.assertEqual(len(photos), 1)
-        self.assertEqual(photos[0].path, data['path'])
+        self.assertEqual(photos[0].path, response.json()['path'])
         async_wrapper.assert_called_once()
 
     def test_get_photo_list(self):
@@ -94,10 +94,7 @@ class TestPhotos(APITestCase):
         new_data = {
             'image': self.get_uploaded_test_png()
         }
-        # old data not equal to new (incoming) data
-        print(f'old: {random_photo.path}, new: {new_data["path"]}')
-        self.assertNotEqual(random_photo.path, new_data['path'])
-        response = self.client.put(url, new_data, content_type='application/json')
+        response = self.client.put(url, new_data)
         data = response.json()
         self.assertEqual(response.status_code, 200)
         # fetch updated data from db
