@@ -1,7 +1,12 @@
+import os
+import pathlib
 import random
 
 import faker
 from django.test import Client, TestCase
+from django.conf import settings
+from django.core.files import File
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from apiv1 import models
@@ -10,6 +15,11 @@ class TestPhotos(TestCase):
     def setUp(self):
         self.client = Client()
         self.fake = faker.Faker()
+        test_png_relative_path = pathlib.Path('apiv1/tests/uploadable/test.png')
+        self.test_png_path = os.path.join(
+            settings.BASE_DIR.parent,
+            test_png_relative_path
+        )
 
     def tearDown(self):
         del self.client
@@ -28,6 +38,12 @@ class TestPhotos(TestCase):
             photo.save()
             photo_ids.append(photo.photo_id)
         return count, photo_ids
+
+    def get_uploaded_test_png(self):
+        photo = open(self.test_png_path, 'rb')
+        photo = File(photo)
+        photo = SimpleUploadedFile('uploaded.png', photo.read(), content_type='multipart/form-data')
+        return photo
 
     def test_post_photo(self):
         """
