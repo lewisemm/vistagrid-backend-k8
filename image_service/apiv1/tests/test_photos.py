@@ -3,17 +3,19 @@ import pathlib
 import random
 
 import faker
-from django.test import Client, TestCase
 from django.conf import settings
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from rest_framework.test import APITestCase, APIClient
+
 
 from apiv1 import models
 
-class TestPhotos(TestCase):
+
+class TestPhotos(APITestCase):
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
         self.fake = faker.Faker()
         test_png_relative_path = pathlib.Path('apiv1/tests/uploadable/test.png')
         self.test_png_path = os.path.join(
