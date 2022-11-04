@@ -1,6 +1,7 @@
 import os
 import pathlib
 import random
+from unittest.mock import patch
 
 import faker
 from django.conf import settings
@@ -47,7 +48,8 @@ class TestPhotos(APITestCase):
         photo = SimpleUploadedFile('uploaded.png', photo.read(), content_type='multipart/form-data')
         return photo
 
-    def test_post_photo(self):
+    @patch('apiv1.tasks.async_upload_to_s3_wrapper')
+    def test_post_photo(self, async_wrapper):
         """
         Test photo create functionality.
         """
@@ -64,6 +66,7 @@ class TestPhotos(APITestCase):
         photos = models.Photo.objects.all()
         self.assertEqual(len(photos), 1)
         self.assertEqual(photos[0].path, data['path'])
+        async_wrapper.assert_called_once()
 
     def test_get_photo_list(self):
         count, _ = self.generate_random_fake_photo_entries()
