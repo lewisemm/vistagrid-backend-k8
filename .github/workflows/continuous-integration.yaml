@@ -40,6 +40,8 @@ jobs:
       DJANGO_SETTINGS_MODULE: 'image_service.settings.dev_settings'
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      CELERY_BROKER_URL: ${{ secrets.CELERY_BROKER_URL }}
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.9
