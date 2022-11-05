@@ -1,15 +1,28 @@
+import os
+import pathlib
 import random
+from unittest.mock import patch
 
 import faker
-from django.test import Client, TestCase
+from django.conf import settings
+from django.core.files import File
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from rest_framework.test import APITestCase, APIClient
+
 
 from apiv1 import models
 
-class TestPhotos(TestCase):
+
+class TestPhotos(APITestCase):
     def setUp(self):
-        self.client = Client()
+        self.client = APIClient()
         self.fake = faker.Faker()
+        test_png_relative_path = pathlib.Path('apiv1/tests/uploadable/test.png')
+        self.test_png_path = os.path.join(
+            settings.BASE_DIR.parent,
+            test_png_relative_path
+        )
 
     def tearDown(self):
         del self.client
@@ -29,7 +42,14 @@ class TestPhotos(TestCase):
             photo_ids.append(photo.photo_id)
         return count, photo_ids
 
-    def test_post_photo(self):
+    def get_uploaded_test_png(self):
+        photo = open(self.test_png_path, 'rb')
+        photo = File(photo)
+        photo = SimpleUploadedFile('uploaded.png', photo.read(), content_type='multipart/form-data')
+        return photo
+
+    @patch('apiv1.tasks.async_upload_to_s3_wrapper')
+    def test_post_photo(self, async_wrapper):
         """
         Test photo create functionality.
         """
@@ -38,14 +58,15 @@ class TestPhotos(TestCase):
         self.assertEqual(len(photos), 0)
         url = reverse('photo-list')
         data = {
-            'path': self.fake.file_name()
+            'image': self.get_uploaded_test_png()
         }
-        response = self.client.post(url, data)
+        response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, 201)
         # assert photo exists
         photos = models.Photo.objects.all()
         self.assertEqual(len(photos), 1)
-        self.assertEqual(photos[0].path, data['path'])
+        self.assertEqual(photos[0].path, response.json()['path'])
+        async_wrapper.assert_called_once()
 
     def test_get_photo_list(self):
         count, _ = self.generate_random_fake_photo_entries()
@@ -71,12 +92,9 @@ class TestPhotos(TestCase):
         random_photo = models.Photo.objects.get(pk=random_id)
         url = reverse('photo-detail', kwargs={'pk': random_id})
         new_data = {
-            'path': self.fake.file_name()
+            'image': self.get_uploaded_test_png()
         }
-        # old data not equal to new (incoming) data
-        print(f'old: {random_photo.path}, new: {new_data["path"]}')
-        self.assertNotEqual(random_photo.path, new_data['path'])
-        response = self.client.put(url, new_data, content_type='application/json')
+        response = self.client.put(url, new_data)
         data = response.json()
         self.assertEqual(response.status_code, 200)
         # fetch updated data from db
