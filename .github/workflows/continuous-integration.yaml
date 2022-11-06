@@ -58,6 +58,6 @@ jobs:
         pipenv run pip freeze > requirements.txt
         pip install -r requirements.txt
       working-directory: image_service
-    - name: Test image_service with django.test.TestCase
+    - name: Test image_service with rest_framework.test.APITestCase
       run: ./manage.py test
       working-directory: image_service
