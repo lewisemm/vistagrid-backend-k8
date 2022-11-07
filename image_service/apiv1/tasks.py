@@ -20,3 +20,9 @@ def async_upload_to_s3(encoded, filename):
     decoded = base64.b64decode(encoded)
     sss = s3.S3Operations()
     sss.upload_photo(decoded, filename)
+
+
+@shared_task
+def async_delete_object_from_s3(object_key):
+    sss = s3.S3Operations()
+    sss.delete_bucket_object(object_key)
