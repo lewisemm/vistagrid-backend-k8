@@ -102,7 +102,8 @@ class TestPhotos(APITestCase):
         # old data updated to new data
         self.assertEqual(random_photo.path, data['path'])
 
-    def test_delete_photo(self):
+    @patch('apiv1.tasks.async_delete_object_from_s3.delay')
+    def test_delete_photo(self, async_delete_object_from_s3):
         count, photo_ids = self.generate_random_fake_photo_entries()
         random_id = random.choice(photo_ids)
         random_photo = models.Photo.objects.get(pk=random_id)
@@ -111,3 +112,4 @@ class TestPhotos(APITestCase):
         self.assertEqual(response.status_code, 204)
         photos = models.Photo.objects.all()
         self.assertEqual(count - 1, len(photos))
+        async_delete_object_from_s3.assert_called_once()
