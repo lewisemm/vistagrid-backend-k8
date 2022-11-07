@@ -27,3 +27,15 @@ class PhotoViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk):
+        try:
+            # ---------------- TODO: add atomic transaction ---------------------
+            photo_to_delete = self.queryset.get(pk=pk)
+            object_key = photo_to_delete.path
+            photo_to_delete.delete()
+            tasks.async_delete_object_from_s3.delay(object_key)
+            # ---------------- end atomic transaction ---------------------
+            return Response({}, status=status.HTTP_204_NO_CONTENT)
+        except models.Photo.DoesNotExist:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
