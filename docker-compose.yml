@@ -33,7 +33,7 @@ services:
     container_name: user_service
     depends_on:
       - postgres_db
-  image:
+  image_service:
     environment:
       SECRET_KEY: $SECRET_KEY
       DJANGO_SETTINGS_MODULE: image_service.settings.dev_settings
