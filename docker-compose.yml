@@ -45,3 +45,7 @@ services:
     depends_on:
       - mysql_db
       - rabbitmq
+    command: [
+      "./wait-for-it.sh", "mysql_db:3306", "-t", "20", "--",
+      "python", "manage.py", "runserver", "0.0.0.0:8080"
+    ]
