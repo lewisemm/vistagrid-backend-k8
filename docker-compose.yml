@@ -8,14 +8,28 @@ services:
       POSTGRES_DB: vistagrid
     container_name: postgres_db
   user_service:
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbit-node1
+    ports:
+      - "5672:5672"
+    hostname: rabbit-localhost
+  mysql_db:
+    image: mysql:8.0.31
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@postgres_db:5432/vistagrid
       JWT_SECRET_KEY: 'super-secret'
       USER_SERVICE_CONFIG_MODULE: user_service.config.config.DevConfig
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_USER: imsuser
+      MYSQL_PASSWORD: imsuser_pass
+      MYSQL_DATABASE: image_service
+    container_name: mysequel
     ports:
       - "5000:5000"
     container_name: user_service
     depends_on:
+      - "3306:3306"
   image:
     environment:
       SECRET_KEY: $SECRET_KEY
