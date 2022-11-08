@@ -18,9 +18,16 @@ services:
     depends_on:
   image:
     environment:
-      SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
+      SECRET_KEY: $SECRET_KEY
+      DJANGO_SETTINGS_MODULE: image_service.settings.dev_settings
+      DATABASE_URL: mysql://imsuser:imsuser_pass@mysql_db:3306/image_service
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      S3_BUCKET: $S3_BUCKET
+      CELERY_BROKER_URL: pyamqp://guest@rabbitmq//
     ports:
-      - "5001:5000"
+      - "8080:8080"
+    container_name: image_service
     depends_on:
-      - db
-      - postgres_db
+      - mysql_db
+      - rabbitmq
