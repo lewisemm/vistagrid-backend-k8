@@ -1,20 +1,21 @@
 version: '3'
 services:
-  db:
+  postgres_db:
     image: postgres:9.6.17-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: vistagrid
-  user:
+    container_name: postgres_db
+  user_service:
     environment:
-      SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
+      SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@postgres_db:5432/vistagrid
       JWT_SECRET_KEY: 'super-secret'
       USER_SERVICE_CONFIG_MODULE: user_service.config.config.DevConfig
     ports:
       - "5000:5000"
+    container_name: user_service
     depends_on:
-      - db
   image:
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
@@ -22,3 +23,4 @@ services:
       - "5001:5000"
     depends_on:
       - db
+      - postgres_db
