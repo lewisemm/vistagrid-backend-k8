@@ -1,24 +1,54 @@
 version: '3'
 services:
-  db:
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbit-node1
+    ports:
+      - "5672:5672"
+    hostname: rabbit-localhost
+  mysql_db:
+    image: mysql:8.0.31
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_USER: imsuser
+      MYSQL_PASSWORD: imsuser_pass
+      MYSQL_DATABASE: image_service
+    container_name: mysequel
+    ports:
+      - "3306:3306"
+  postgres_db:
     image: postgres:9.6.17-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: vistagrid
-  user:
+    container_name: postgres_db
+  user_service:
     environment:
-      SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
+      SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@postgres_db:5432/vistagrid
       JWT_SECRET_KEY: 'super-secret'
       USER_SERVICE_CONFIG_MODULE: user_service.config.config.DevConfig
     ports:
       - "5000:5000"
+    container_name: user_service
     depends_on:
-      - db
-  image:
+      - postgres_db
+  image_service:
     environment:
-      SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@db:5432/vistagrid
+      SECRET_KEY: $SECRET_KEY
+      DJANGO_SETTINGS_MODULE: image_service.settings.dev_settings
+      DATABASE_URL: mysql://imsuser:imsuser_pass@mysql_db:3306/image_service
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      S3_BUCKET: $S3_BUCKET
+      CELERY_BROKER_URL: pyamqp://guest@rabbitmq//
     ports:
-      - "5001:5000"
+      - "8080:8080"
+    container_name: image_service
     depends_on:
-      - db
+      - mysql_db
+      - rabbitmq
+    command: [
+      "./wait-for-it.sh", "mysql_db:3306", "-t", "20", "--",
+      "python", "manage.py", "runserver", "0.0.0.0:8080"
+    ]
