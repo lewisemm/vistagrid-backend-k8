@@ -1,36 +1,53 @@
-[![Build Status](https://travis-ci.org/lewisemm/vistagrid-backend-k8.svg?branch=master)](https://travis-ci.org/lewisemm/vistagrid-backend-k8) [![Coverage Status](https://coveralls.io/repos/github/lewisemm/vistagrid-backend-k8/badge.svg?branch=master)](https://coveralls.io/github/lewisemm/vistagrid-backend-k8?branch=master)
+# Getting Started
 
-# vistagrid-backend-k8
-
-## Setup and Install Instructions
-
-
-### Prerequisite Environment Variables
-This project requires the following environment variables to be defined in order to run.
-* SQLALCHEMY_DATABASE_URI
-* JWT_SECRET_KEY
-
-### Running the project
-1. Open terminal and navigate to your projects directory.
+## Building The Images
+To run the entire app on docker, first build the `user_service` and `image_service` images.
 
 ```sh
-cd ~/projects/
+docker-compose -f docker-compose.yml -f deployment/docker/docker-compose-imageservice.yml -f deployment/docker/docker-compose-userservice.yml build
 ```
 
-2. Clone the repo.
+## Running The App
+The following command will get `user_service`, `image_service` and their dependent images started.
 
 ```sh
-git clone git@github.com:lewisemm/vistagrid-backend-k8.git
+docker-compose -f docker-compose.yml -f deployment/docker/docker-compose-imageservice.yml -f deployment/docker/docker-compose-userservice.yml up
 ```
 
-3. `cd` into the `vistagrid-backend-k8` directory.
+### Prerequisite Setup
+#### Database Migrations
+Apply migrations for the `user_service` by running the following command.
 
 ```sh
-cd vistagrid-backend-k8
+docker exec user_service flask db upgrade
 ```
 
-4. Start the app.
+Apply migrations for the `image_service` by running the following command.
 
 ```sh
-docker-compose up
+docker exec image_service python manage.py migrate
 ```
+
+#### Celery Workers
+
+Start the Celery workers in detached mode to handle asynchronous tasks.
+
+```sh
+docker exec -d image_service celery -A image_service worker -l INFO
+```
+
+#### Using The App
+
+1. Creating Users
+    ```sh
+    curl -X POST http://localhost:5000/api/user -H "Content-Type: application/json" -d '{"username":"joe", "password":"joepassword"}'
+    ```
+
+2. Obtaining User JWT
+    ```sh
+    curl -X POST http://localhost:5000/api/user -H "Content-Type: application/json" -d '{"username":"joe", "password":"joepassword"}'
+    # example response
+    {"access_token": <token string>}
+    ```
+## Docs
+* `user_service` docs: http://localhost:5000/swagger-ui/
