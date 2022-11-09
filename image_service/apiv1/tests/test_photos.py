@@ -112,4 +112,4 @@ class TestPhotos(APITestCase):
         self.assertEqual(response.status_code, 204)
         photos = models.Photo.objects.all()
         self.assertEqual(count - 1, len(photos))
-        async_delete_object_from_s3.assert_called_once()
+        async_delete_object_from_s3.assert_called_once_with(random_photo.path)
