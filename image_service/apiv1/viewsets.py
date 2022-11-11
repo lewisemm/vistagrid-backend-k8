@@ -15,7 +15,10 @@ class PhotoViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             img = request.data['image']
-            file_name = f'photos/{datetime.datetime.now()}-{img.name}'
+            fmt = "%Y_%m_%d__%H_%M_%S"
+            current_time = datetime.datetime.now()
+            formatted_time = datetime.datetime.strftime(current_time, fmt)
+            file_name = f'photos/{formatted_time}-{img.name}'
             photo = models.Photo(path=file_name)
             # TODO: To be fixed when authentication is done.
             # (retrieve a user id from provided token.)
