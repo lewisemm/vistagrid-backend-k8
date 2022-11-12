@@ -7,6 +7,9 @@ from celery import shared_task
 
 from aws import s3
 
+def generate_presigned_url(object_key):
+    sss = s3.S3Operations()
+    return sss.create_presigned_url(object_key)
 
 async def async_upload_to_s3_wrapper(img, file_name, content_type):
     ## TODO: Use of img.chunks() is preferred.
