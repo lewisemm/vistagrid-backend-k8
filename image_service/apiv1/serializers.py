@@ -10,8 +10,9 @@ class PhotoSerializer(serializers.ModelSerializer):
         allow_empty_file=False,
         use_url=False
     )
+    signed_url = serializers.URLField(read_only=True)
 
     class Meta:
         model = models.Photo
-        fields = ('path', 'image')
+        fields = ('path', 'image', 'signed_url')
         read_only_fields = ('path',)
