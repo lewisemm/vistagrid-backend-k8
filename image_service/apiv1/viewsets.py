@@ -24,7 +24,10 @@ class PhotoViewSet(viewsets.ModelViewSet):
             # (retrieve a user id from provided token.)
             photo.owner_id = int(random.random() * 100)
             photo.save()
-            asyncio.run(tasks.async_upload_to_s3_wrapper(img, file_name))
+            asyncio.run(
+                tasks.async_upload_to_s3_wrapper(
+                    img, file_name, img.content_type)
+            )
             return Response(
                 serializers.PhotoSerializer(photo).data,
                 status=status.HTTP_201_CREATED
