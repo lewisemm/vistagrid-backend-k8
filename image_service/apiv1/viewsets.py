@@ -34,6 +34,17 @@ class PhotoViewSet(viewsets.ModelViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def list(self, request):
+        # directly modifying the contents of queryset will lead to unexpected
+        # behaviour. create a copy of queryset and modify that instead.
+        qset = self.queryset[::]
+        for photo in qset:
+            photo.signed_url = tasks.generate_presigned_url(photo.path)
+        return Response(
+            self.serializer_class(qset, many=True).data,
+            status=status.HTTP_200_OK
+        )
+
     def destroy(self, request, pk):
         try:
             # ---------------- TODO: add atomic transaction ---------------------
