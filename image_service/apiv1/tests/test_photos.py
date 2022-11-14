@@ -1,7 +1,7 @@
 import os
 import pathlib
 import random
-from unittest.mock import patch
+from unittest.mock import patch, call
 
 import faker
 from django.conf import settings
@@ -68,13 +68,18 @@ class TestPhotos(APITestCase):
         self.assertEqual(photos[0].path, response.json()['path'])
         async_wrapper.assert_called_once()
 
-    def test_get_photo_list(self):
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_get_photo_list(self, generate_presigned_url):
         count, _ = self.generate_random_fake_photo_entries()
         url = reverse('photo-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data), count)
+        calls_made = []
+        for photo in models.Photo.objects.all():
+            calls_made.append(call(photo.path))
+        generate_presigned_url.assert_has_calls(calls_made, any_order=True)
 
     def test_get_photo_detail(self):
         count, photo_ids = self.generate_random_fake_photo_entries()
