@@ -14,5 +14,5 @@ class PhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Photo
-        fields = ('path', 'image', 'signed_url')
+        fields = ('path', 'image', 'signed_url', 'photo_id')
         read_only_fields = ('path',)
