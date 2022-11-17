@@ -12,8 +12,9 @@ def generate_presigned_url(object_key):
     return sss.create_presigned_url(object_key)
 
 async def async_upload_to_s3_wrapper(img, file_name, content_type):
-    ## TODO: Use of img.chunks() is preferred.
-    binary_data = img.read()
+    binary_data = b''
+    for chunk in img.chunks():
+        binary_data += chunk
     encoded = base64.b64encode(binary_data).decode()
     async_upload_to_s3.delay(encoded, file_name, content_type)
 
