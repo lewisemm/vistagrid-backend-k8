@@ -50,6 +50,6 @@ class UserAuth(MethodResource, Resource):
     def get(self):
         try:
             current_user = get_jwt_identity()
-            return {'username': current_user}, 200
+            return {'user_id': current_user}, 200
         except Exception as e:
             return {'error': f'{e}'}, 500
