@@ -14,6 +14,17 @@ from rest_framework.test import APITestCase, APIClient
 from apiv1 import models
 
 
+class MockUserServiceResponse:
+    """
+    Mock response from the user_service.
+    """
+    def __init__(self):
+        self.code = 200
+
+    def readlines(self):
+        return ['{"user_id": 2}'.encode('utf-8')]
+
+
 class TestPhotos(APITestCase):
     def setUp(self):
         self.client = APIClient()
@@ -48,8 +59,12 @@ class TestPhotos(APITestCase):
         photo = SimpleUploadedFile('uploaded.png', photo.read(), content_type='multipart/form-data')
         return photo
 
+    @patch(
+        'apiv1.utils.get_user_id_from_auth_service',
+        return_value=MockUserServiceResponse()
+    )
     @patch('apiv1.tasks.async_upload_to_s3_wrapper')
-    def test_post_photo(self, async_wrapper):
+    def test_post_photo(self, async_wrapper, auth_service_handler):
         """
         Test photo create functionality.
         """
@@ -60,6 +75,7 @@ class TestPhotos(APITestCase):
         data = {
             'image': self.get_uploaded_test_png()
         }
+        self.client.credentials(HTTP_AUTHORIZATION='fake-auth-token')
         response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, 201)
         # assert photo exists
@@ -67,6 +83,7 @@ class TestPhotos(APITestCase):
         self.assertEqual(len(photos), 1)
         self.assertEqual(photos[0].path, response.json()['path'])
         async_wrapper.assert_called_once()
+        auth_service_handler.assert_called_once()
 
     @patch('apiv1.tasks.generate_presigned_url')
     def test_get_photo_list(self, generate_presigned_url):
