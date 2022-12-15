@@ -7,9 +7,6 @@ def get_user_id_from_auth_service(token):
     request to the auth service.
     Returns the response from the auth service.
     """
-    headers = {
-        'Authorization': token
-    }
     auth_service_url = os.environ['AUTH_SERVICE_URL']
     endpoint = '/api/user/auth'
     url = f'{auth_service_url}{endpoint}'
