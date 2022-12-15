@@ -24,6 +24,9 @@ services:
       POSTGRES_DB: vistagrid
     container_name: postgres_db
   user_service:
+    image: user_service:1.0
+    build:
+      context: user_service/
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@postgres_db:5432/vistagrid
       JWT_SECRET_KEY: 'super-secret'
@@ -34,6 +37,9 @@ services:
     depends_on:
       - postgres_db
   image_service:
+    image: image_service:v0.1
+    build:
+      context: image_service/
     environment:
       IMAGE_SERVICE_SECRET_KEY: $IMAGE_SERVICE_SECRET_KEY
       IMAGE_SERVICE_DJANGO_SETTINGS_MODULE: $IMAGE_SERVICE_DJANGO_SETTINGS_MODULE
