@@ -1,11 +1,12 @@
 import asyncio
 import datetime
+import json
 import random
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from apiv1 import models, serializers, tasks
+from apiv1 import models, serializers, tasks, utils
 
 class PhotoViewSet(viewsets.ModelViewSet):
     queryset = models.Photo.objects.all()
@@ -14,15 +15,33 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
+            # TODO: Define this logic in a function to avoid possible DRY
+            #  principle violation
+            # TODO: Look into caching
+            # ----------------------------------------------------------
+            token = request.headers.get('Authorization', None)
+            if not token:
+                return Response(
+                    {'error': 'Authorization JWT token is required'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            resp = utils.get_user_id_from_auth_service(token)
+            if resp.code != 200:
+                return Response(
+                    {'error': 'Authorization JWT token is invalid'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            data = resp.readlines()
+            data = json.loads(data[0].decode('utf-8'))
+            owner_id = data['user_id']
+            # ----------------------------------------------------------
             img = request.data['image']
             fmt = "%Y_%m_%d__%H_%M_%S"
             current_time = datetime.datetime.now()
             formatted_time = datetime.datetime.strftime(current_time, fmt)
             file_name = f'photos/{formatted_time}-{img.name}'
             photo = models.Photo(path=file_name)
-            # TODO: To be fixed when authentication is done.
-            # (retrieve a user id from provided token.)
-            photo.owner_id = int(random.random() * 100)
+            photo.owner_id = owner_id
             photo.save()
             asyncio.run(
                 tasks.async_upload_to_s3_wrapper(
