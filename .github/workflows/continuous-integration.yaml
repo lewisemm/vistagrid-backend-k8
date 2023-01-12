@@ -6,19 +6,15 @@ on:
   pull_request:
     branches:
       - master
-
-env:
-  SECRET_KEY: 'continous-integration-secret-key'
-
 permissions:
   contents: read
-
 jobs:
   test_user_service:
     name: Test user_service
     runs-on: ubuntu-latest
     env:
       SERVER_NAME: 'localhost:5000'
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.10
