@@ -77,7 +77,7 @@ class TestPhotos(APITestCase):
         }
         self.client.credentials(HTTP_AUTHORIZATION='fake-auth-token')
         response = self.client.post(url, data, format='multipart')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 202)
         # assert photo exists
         photos = models.Photo.objects.all()
         self.assertEqual(len(photos), 1)
