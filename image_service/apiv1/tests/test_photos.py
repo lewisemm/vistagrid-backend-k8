@@ -59,12 +59,15 @@ class TestPhotos(APITestCase):
         photo = SimpleUploadedFile('uploaded.png', photo.read(), content_type='multipart/form-data')
         return photo
 
+    @patch('apiv1.tasks.generate_presigned_url')
     @patch(
         'apiv1.utils.get_user_id_from_auth_service',
         return_value=MockUserServiceResponse()
     )
     @patch('apiv1.tasks.async_upload_to_s3_wrapper')
-    def test_post_photo(self, async_wrapper, auth_service_handler):
+    def test_post_photo(
+        self, async_wrapper, auth_service_handler, generate_presigned_url
+    ):
         """
         Test photo create functionality.
         """
@@ -84,6 +87,7 @@ class TestPhotos(APITestCase):
         self.assertEqual(photos[0].path, response.json()['path'])
         async_wrapper.assert_called_once()
         auth_service_handler.assert_called_once()
+        generate_presigned_url.assert_called_once()
 
     @patch('apiv1.tasks.generate_presigned_url')
     def test_get_photo_list(self, generate_presigned_url):
@@ -98,17 +102,20 @@ class TestPhotos(APITestCase):
             calls_made.append(call(photo.path))
         generate_presigned_url.assert_has_calls(calls_made, any_order=True)
 
-    def test_get_photo_detail(self):
-        count, photo_ids = self.generate_random_fake_photo_entries()
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_get_photo_detail(self, generate_presigned_url):
+        _, photo_ids = self.generate_random_fake_photo_entries()
         random_id = random.choice(photo_ids)
         random_photo = models.Photo.objects.get(pk=random_id)
         url = reverse('photo-detail', kwargs={'pk': random_id})
         response = self.client.get(url)
+        generate_presigned_url.assert_called_once()
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(random_photo.path, data['path'])
 
-    def test_put_photo(self):
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_put_photo(self, generate_presigned_url):
         _, photo_ids = self.generate_random_fake_photo_entries()
         random_id = random.choice(photo_ids)
         random_photo = models.Photo.objects.get(pk=random_id)
@@ -117,6 +124,7 @@ class TestPhotos(APITestCase):
             'image': self.get_uploaded_test_png()
         }
         response = self.client.put(url, new_data)
+        generate_presigned_url.assert_called_once()
         data = response.json()
         self.assertEqual(response.status_code, 200)
         # fetch updated data from db
