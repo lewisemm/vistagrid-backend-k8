@@ -51,6 +51,8 @@ jobs:
     - name: Install project dependencies
       run: pipenv install --system --dev
       working-directory: image_service
+    - name: Install coverage.py
+      run: pip install coverage==7.2.3
     - name: Test image_service with rest_framework.test.APITestCase
-      run: ./manage.py test
+      run: coverage run manage.py test
       working-directory: image_service
