@@ -56,3 +56,5 @@ jobs:
     - name: Test image_service with rest_framework.test.APITestCase
       run: coverage run manage.py test
       working-directory: image_service
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
