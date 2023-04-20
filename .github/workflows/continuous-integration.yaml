@@ -2,7 +2,7 @@ name: vistagrid-backend-k8s
 on:
   push:
     branches:
-      - master
+      - "*"
   pull_request:
     branches:
       - master
