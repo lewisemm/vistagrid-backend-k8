@@ -1,8 +1,8 @@
 name: vistagrid-backend-k8s
 on:
   push:
-    branches:
-      - "*"
+    branches-ignore:
+      - master
   pull_request:
     branches:
       - master
