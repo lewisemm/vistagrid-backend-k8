@@ -66,10 +66,10 @@ jobs:
     - name: Test image_service with rest_framework.test.APITestCase
       run: coverage run manage.py test
       working-directory: image_service
-    - name: Create test coverage report in XML format
+    - name: Create image_service test coverage report in XML format
       run: coverage xml
       working-directory: image_service
-    - name: Upload coverage reports to Codecov
+    - name: Upload image_service coverage reports to Codecov
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
