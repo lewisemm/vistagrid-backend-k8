@@ -25,9 +25,10 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
+        pip install coverage==7.2.3
       working-directory: user_service
     - name: Test user_service with pytest
-      run: pytest
+      run: coverage run -m pytest
       working-directory: user_service
   test_image_service:
     name: Test image_service
