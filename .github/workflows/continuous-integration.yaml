@@ -1,7 +1,7 @@
 name: vistagrid-backend-k8s
 on:
   push:
-    branches:
+    branches-ignore:
       - master
   pull_request:
     branches:
@@ -25,10 +25,20 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
+        pip install coverage==7.2.3
       working-directory: user_service
     - name: Test user_service with pytest
-      run: pytest
+      run: coverage run -m pytest
       working-directory: user_service
+    - name: Create user_service test coverage report in XML format
+      run: coverage xml
+      working-directory: user_service
+    - name: Upload user_service coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: user_service/coverage.xml
+        fail_ci_if_error: true
   test_image_service:
     name: Test image_service
     runs-on: ubuntu-latest
@@ -51,6 +61,17 @@ jobs:
     - name: Install project dependencies
       run: pipenv install --system --dev
       working-directory: image_service
+    - name: Install coverage.py
+      run: pip install coverage==7.2.3
     - name: Test image_service with rest_framework.test.APITestCase
-      run: ./manage.py test
+      run: coverage run manage.py test
       working-directory: image_service
+    - name: Create image_service test coverage report in XML format
+      run: coverage xml
+      working-directory: image_service
+    - name: Upload image_service coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: image_service/coverage.xml
+        fail_ci_if_error: true

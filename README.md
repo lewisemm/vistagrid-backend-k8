@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/github/lewisemm/vistagrid-backend-k8/branch/master/graph/badge.svg?token=49IX4RQEHZ)](https://codecov.io/github/lewisemm/vistagrid-backend-k8)
+
 # Getting Started
 
 ## Building The Images
