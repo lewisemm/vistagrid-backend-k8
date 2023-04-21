@@ -30,6 +30,15 @@ jobs:
     - name: Test user_service with pytest
       run: coverage run -m pytest
       working-directory: user_service
+    - name: Create user_service test coverage report in XML format
+      run: coverage xml
+      working-directory: user_service
+    - name: Upload user_service coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: user_service/coverage.xml
+        fail_ci_if_error: true
   test_image_service:
     name: Test image_service
     runs-on: ubuntu-latest
