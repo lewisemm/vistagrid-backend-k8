@@ -1,7 +1,5 @@
 # Image Service - Handles Image Management including Image Upload, Manipulation and Deletion.
 
-[![codecov](https://codecov.io/github/lewisemm/vistagrid-backend-k8/branch/master/graph/badge.svg?token=49IX4RQEHZ)](https://codecov.io/github/lewisemm/vistagrid-backend-k8)
-
 ## Setup
 ### Environment Variables
 * SECRET_KEY
