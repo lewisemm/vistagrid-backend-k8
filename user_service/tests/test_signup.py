@@ -12,13 +12,6 @@ from user_service.tests.fixtures.common import (
 
 fake = Faker()
 
-@pytest.fixture
-def credentials():
-    return {
-        'username': fake.user_name(),
-        'password': fake.password()
-    }
-
 
 def test_signup(client, credentials):
     with client.application.app_context():

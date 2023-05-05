@@ -1,6 +1,5 @@
 import os
 import pytest
-import tempfile
 
 from faker import Faker
 
@@ -11,18 +10,19 @@ from user_service.api import api
 
 fake = Faker()
 
+
 @pytest.fixture
 def client():
-    db_fd, temp_path = tempfile.mkstemp()
-    api.app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{temp_path}'
-    models.db.create_all()
+    with api.app.app_context():
+        models.db.create_all()
 
-    with api.app.test_client() as client:
-        # with api.app.app_context():
-        #     api.init_db()
-        yield client
-    os.close(db_fd)
-    os.unlink(temp_path)
+    with api.app.test_request_context() as context:
+        context.push()
+        yield api.app.test_client()
+        context.pop()
+
+    with api.app.app_context():
+        models.db.drop_all()
 
 @pytest.fixture
 def credentials():
@@ -32,8 +32,9 @@ def credentials():
     }
 
 @pytest.fixture
-def existing_user(credentials):
-    user = models.User(**credentials)
-    models.db.session.add(user)
-    models.db.session.commit()
-    return user
+def existing_user(client, credentials):
+    with client.application.app_context():
+        user = models.User(**credentials)
+        models.db.session.add(user)
+        models.db.session.commit()
+        yield user

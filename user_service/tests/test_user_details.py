@@ -7,23 +7,12 @@ from faker import Faker
 from user_service import models
 from user_service.tests.fixtures.common import (
     client,
+    credentials,
     existing_user
 )
 
 
 fake = Faker()
-
-
-@pytest.fixture
-def existing_user():
-    credentials = {
-        'username': fake.user_name(),
-        'password': fake.password()
-    }
-    user = models.User(**credentials)
-    models.db.session.add(user)
-    models.db.session.commit()
-    return user
 
 
 def test_get_user_details(client, existing_user):
@@ -62,7 +51,7 @@ def test_delete_user_404(client):
 
 def test_edit_user_details(client, existing_user):
     with client.application.app_context():
-        url = url_for('user-detail', user_id= existing_user.user_id)
+        url = url_for('user-detail', user_id=existing_user.user_id)
         data = {'password': fake.password()}
         res = client.put(
             url,
@@ -70,8 +59,17 @@ def test_edit_user_details(client, existing_user):
             content_type='application/json'
         )
         assert res.status_code == 200
-        # assert that the password in the data dictionary above is the new password
-        assert existing_user.verify_password(data['password']) is True
+
+        # refresh existing_user from database.
+        # cannot use models.db.session.refresh(existing_user) because
+        # existing_user was yielded from a fixture that uses different model
+        # session. Because of this, an sqlalchemy.orm.exc.DetachedInstanceError
+        # will be raised.
+        user = models.User.query.get(existing_user.user_id)
+
+        # assert that the password in the data dictionary above is the new
+        # password
+        assert user.verify_password(data['password']) is True
 
 
 def test_edit_user_details_404(client):
