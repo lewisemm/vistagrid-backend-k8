@@ -30,6 +30,5 @@ pytz==2023.3
 six==1.16.0
 SQLAlchemy==2.0.12
 typing_extensions==4.5.0
-wcwidth==0.2.5
 webargs==8.2.0
 Werkzeug==2.3.3
