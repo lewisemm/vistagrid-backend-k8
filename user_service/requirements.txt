@@ -1,4 +1,5 @@
 alembic==1.10.4
+aniso8601==9.0.1
 apispec==6.0.0
 bcrypt==4.0.1
 blinker==1.6.2
@@ -23,6 +24,7 @@ marshmallow==3.18.0
 packaging==23.1
 passlib==1.7.4
 pluggy==1.0.0
+pycparser==2.21
 PyJWT==2.6.0
 pytest==7.3.1
 python-dateutil==2.8.2
@@ -32,3 +34,4 @@ SQLAlchemy==2.0.12
 typing_extensions==4.5.0
 webargs==8.2.0
 Werkzeug==2.3.3
+zipp==3.15.0
