@@ -1,5 +1,5 @@
 alembic==1.10.4
-aniso8601==8.0.0
+aniso8601==9.0.1
 apispec==6.0.0
 bcrypt==4.0.1
 blinker==1.6.2
