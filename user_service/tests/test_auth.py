@@ -115,3 +115,17 @@ def test_identify_user_from_jwt_valid_authorization_header(
         assert res.status_code == 200
         assert res.json['user_id'] == existing_user.user_id
 
+def test_identify_user_from_jwt_invalid_authorization_header(client):
+    """
+    Test functionality to identify request owner from request when invalid
+    `Authorization` header is provided.
+    """
+    with client.application.app_context():
+        url = url_for('user-auth')
+        token = "random_text_1.random_text_2.random_text_3"
+        res = client.get(
+            url,
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {token}'}
+        )
+        assert res.status_code == 422
