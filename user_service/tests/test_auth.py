@@ -77,3 +77,18 @@ def test_jwt_auth_wrong_password(client, existing_user, credentials):
         assert res.status_code == 401
         assert f'Invalid password for user {credentials["username"]}' in \
             res.data.decode('utf-8')
+
+def test_identify_user_from_jwt_no_authorization_header(client):
+    """
+    Test functionality to identify request owner from request when
+    `Authorization` header is missing.
+    """
+    with client.application.app_context():
+        url = url_for('user-auth')
+        res = client.get(
+            url,
+            content_type='application/json',
+            headers={}
+        )
+        assert res.status_code == 401
+
