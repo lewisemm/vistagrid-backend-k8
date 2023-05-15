@@ -46,7 +46,7 @@ class UserAuth(MethodResource, Resource):
         return {'access_token': access_token}, 200
 
     @doc(description='Get `username` of current authenticated request.')
-    @jwt_required
+    @jwt_required()
     def get(self):
         try:
             current_user = get_jwt_identity()
