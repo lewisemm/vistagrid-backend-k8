@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.11
 
 WORKDIR /image_service/
 
@@ -11,4 +11,4 @@ RUN pip install --upgrade pip && \
 
 COPY . /image_service/
 
-EXPOSE 8080
+EXPOSE 8000

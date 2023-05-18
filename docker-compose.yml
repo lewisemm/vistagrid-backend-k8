@@ -22,7 +22,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: vistagrid
+      POSTGRES_HOST_AUTH_METHOD: trust
     container_name: postgres_db
+  jwt_nginx:
+    image: lewisemm/vistagrid-nginx:v1.24.0
+    build:
+      context: reverseproxy/
+    container_name: vistagrid_ngx
+    ports:
+      - "5001:5001"
   user_service:
     image: user_service:1.0
     build:
@@ -36,6 +44,7 @@ services:
     container_name: user_service
     depends_on:
       - postgres_db
+      - jwt_nginx
   image_service:
     image: image_service:v0.1
     build:
@@ -50,12 +59,13 @@ services:
       CELERY_BROKER_URL: $IMAGE_SERVICE_CELERY_BROKER_URL
       AUTH_SERVICE_URL: $IMAGE_SERVICE_AUTH_SERVICE_URL
     ports:
-      - "8080:8080"
     container_name: image_service
+      - "8000:8000"
     depends_on:
       - mysql_db
       - rabbitmq
+      - jwt_nginx
     command: [
       "./wait-for-it.sh", "mysql_db:3306", "-t", "40", "--",
-      "python", "manage.py", "runserver", "0.0.0.0:8080"
+      "python", "manage.py", "runserver", "0.0.0.0:8000"
     ]
