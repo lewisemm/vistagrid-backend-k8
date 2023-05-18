@@ -58,13 +58,13 @@ services:
       CELERY_BROKER_URL: $IMAGE_SERVICE_CELERY_BROKER_URL
       AUTH_SERVICE_URL: $IMAGE_SERVICE_AUTH_SERVICE_URL
     ports:
-      - "8080:8080"
     container_name: image_service
+      - "8000:8000"
     depends_on:
       - mysql_db
       - rabbitmq
       - jwt_nginx
     command: [
       "./wait-for-it.sh", "mysql_db:3306", "-t", "40", "--",
-      "python", "manage.py", "runserver", "0.0.0.0:8080"
+      "python", "manage.py", "runserver", "0.0.0.0:8000"
     ]

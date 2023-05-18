@@ -11,4 +11,4 @@ RUN pip install --upgrade pip && \
 
 COPY . /image_service/
 
-EXPOSE 8080
+EXPOSE 8000
