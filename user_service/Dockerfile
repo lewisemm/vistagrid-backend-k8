@@ -4,7 +4,9 @@ WORKDIR /user_service/
 
 COPY requirements.txt /user_service/
 
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    pip install psycopg2==2.9.6
 
 COPY . /user_service/
 
