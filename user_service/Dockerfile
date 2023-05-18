@@ -14,4 +14,4 @@ EXPOSE 5000
 
 ENV FLASK_APP=api
 
-CMD [ "python", "-m", "flask", "run", "--host=0.0.0.0" ]
+CMD [ "python", "-m", "flask", "run", "--host=0.0.0.0", "-p 5000" ]
