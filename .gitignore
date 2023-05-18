@@ -131,3 +131,6 @@ dmypy.json
 
 # sqlite3
 *.sqlite3
+
+# Ignore nginx server configuration file
+reverseproxy/fivek.conf
