@@ -42,7 +42,7 @@ class UserAuth(MethodResource, Resource):
             return {
                 'error': f'Invalid password for user {args["username"]}.'
             }, 401
-        access_token = create_access_token(identity=user.user_id)
+        access_token = create_access_token(identity=f'{user.user_id}')
         return {'access_token': access_token}, 200
 
     @doc(description='Get `username` of current authenticated request.')
