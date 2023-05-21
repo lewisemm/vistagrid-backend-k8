@@ -91,13 +91,9 @@ class TestPhotos(APITestCase):
         return int(random.random() * 1000)
 
     @patch('apiv1.tasks.generate_presigned_url')
-    @patch(
-        'apiv1.utils.get_user_id_from_auth_service',
-        return_value=MockUserServiceResponse()
-    )
     @patch('apiv1.tasks.async_upload_to_s3_wrapper')
     def test_post_photo(
-        self, async_wrapper, auth_service_handler, generate_presigned_url
+        self, async_wrapper, generate_presigned_url
     ):
         """
         Test photo create functionality.
