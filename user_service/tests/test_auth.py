@@ -113,7 +113,8 @@ def test_identify_user_from_jwt_valid_authorization_header(
             headers={'Authorization': f'Bearer {token}'}
         )
         assert res.status_code == 200
-        assert res.json['user_id'] == existing_user.user_id
+        user_id = int(res.json['user_id'] )
+        assert user_id == existing_user.user_id
 
 def test_identify_user_from_jwt_invalid_authorization_header(client):
     """
