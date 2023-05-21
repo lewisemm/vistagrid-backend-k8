@@ -59,6 +59,12 @@ class TestPhotos(APITestCase):
         photo = SimpleUploadedFile('uploaded.png', photo.read(), content_type='multipart/form-data')
         return photo
 
+    def get_random_user_id(self):
+        """
+        Generates and returns a random user_id that falls between 1 - 1000.
+        """
+        return int(random.random() * 1000)
+
     @patch('apiv1.tasks.generate_presigned_url')
     @patch(
         'apiv1.utils.get_user_id_from_auth_service',
