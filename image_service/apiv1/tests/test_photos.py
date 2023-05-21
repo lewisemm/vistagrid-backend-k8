@@ -39,15 +39,40 @@ class TestPhotos(APITestCase):
         del self.client
         del self.fake
 
-    def generate_random_fake_photo_entries(self):
+    def generate_owner_fake_photo_entries(self, owner_id):
+        """
+        Generate random fake photo entries that belong to user of
+        user_id == owner_id.
+        """
         # create fake entries
         count = int(random.random() * 10) + 1
         photo_ids = []
         for i in range(count):
             data = {
                 'path': self.fake.file_name(),
-                'owner_id': int(random.random() * 1000)
+                'owner_id': owner_id
             }
+            photo = models.Photo(**data)
+            photo.save()
+            photo_ids.append(photo.photo_id)
+        return count, photo_ids
+
+    def generate_random_fake_photo_entries(self, owner_id):
+        """
+        Generates random fake photo entries that do not belong to user of
+        user_id == owner_id.
+        """
+        # create fake entries
+        count = int(random.random() * 10) + 1
+        photo_ids = []
+        for i in range(count):
+            data = {
+                'path': self.fake.file_name(),
+                'owner_id': self.get_random_user_id()
+            }
+            # ensure this photo entry does not belong to owner_id
+            while data['owner_id'] == owner_id:
+                data['owner_id'] = self.get_random_user_id()
             photo = models.Photo(**data)
             photo.save()
             photo_ids.append(photo.photo_id)
