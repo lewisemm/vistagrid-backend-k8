@@ -122,14 +122,24 @@ class TestPhotos(APITestCase):
 
     @patch('apiv1.tasks.generate_presigned_url')
     def test_get_photo_list(self, generate_presigned_url):
-        count, _ = self.generate_random_fake_photo_entries()
+        """
+        Test to validate that a get request to the API will return only photos
+        where photo.owner_id = current_user_id.
+        """
+        current_user_id = self.get_random_user_id()
+        # generate random entries that belong to current_user_id
+        count, _ = self.generate_owner_fake_photo_entries(current_user_id)
+        # generate random entries that do not belong to current_user_id
+        other_count, _ = self.generate_random_fake_photo_entries(current_user_id)
         url = reverse('photo-list')
-        response = self.client.get(url)
+        # api needs owner_id information in order to fetch only owner photos.
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.get(url, headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data), count)
         calls_made = []
-        for photo in models.Photo.objects.all():
+        for photo in models.Photo.objects.filter(owner_id=current_user_id):
             calls_made.append(call(photo.path))
         generate_presigned_url.assert_has_calls(calls_made, any_order=True)
 
