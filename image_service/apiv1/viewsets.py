@@ -22,41 +22,27 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            # TODO: Define this logic in a function to avoid possible DRY
-            #  principle violation
-            # TODO: Look into caching
-            # ----------------------------------------------------------
-            token = request.headers.get('Authorization', None)
-            if not token:
-                return Response(
-                    {'error': 'Authorization JWT token is required'},
-                    status=status.HTTP_401_UNAUTHORIZED
+            owner_id = self.request.headers.get('Owner-Id', None)
+            if utils.owner_id_header_is_valid(owner_id):
+                img = request.data['image']
+                fmt = "%Y_%m_%d__%H_%M_%S"
+                current_time = datetime.datetime.now()
+                formatted_time = datetime.datetime.strftime(current_time, fmt)
+                file_name = f'photos/{formatted_time}-{img.name}'
+                photo = models.Photo(path=file_name)
+                photo.owner_id = owner_id
+                photo.save()
+                asyncio.run(
+                    tasks.async_upload_to_s3_wrapper(
+                        img, file_name, img.content_type)
                 )
-            resp = utils.get_user_id_from_auth_service(token)
-            if resp.code != 200:
                 return Response(
-                    {'error': 'Authorization JWT token is invalid'},
-                    status=status.HTTP_400_BAD_REQUEST
+                    serializers.PhotoSerializer(photo).data,
+                    status=status.HTTP_202_ACCEPTED
                 )
-            data = resp.readlines()
-            data = json.loads(data[0].decode('utf-8'))
-            owner_id = data['user_id']
-            # ----------------------------------------------------------
-            img = request.data['image']
-            fmt = "%Y_%m_%d__%H_%M_%S"
-            current_time = datetime.datetime.now()
-            formatted_time = datetime.datetime.strftime(current_time, fmt)
-            file_name = f'photos/{formatted_time}-{img.name}'
-            photo = models.Photo(path=file_name)
-            photo.owner_id = owner_id
-            photo.save()
-            asyncio.run(
-                tasks.async_upload_to_s3_wrapper(
-                    img, file_name, img.content_type)
-            )
             return Response(
-                serializers.PhotoSerializer(photo).data,
-                status=status.HTTP_202_ACCEPTED
+                {'error': 'Invalid value for "Owner-Id" header.'},
+                status=status.HTTP_401_UNAUTHORIZED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
