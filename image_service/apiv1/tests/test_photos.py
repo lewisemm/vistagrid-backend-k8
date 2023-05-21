@@ -160,14 +160,16 @@ class TestPhotos(APITestCase):
 
     @patch('apiv1.tasks.generate_presigned_url')
     def test_put_photo(self, generate_presigned_url):
-        _, photo_ids = self.generate_random_fake_photo_entries()
+        current_user_id = self.get_random_user_id()
+        _, photo_ids = self.generate_owner_fake_photo_entries(current_user_id)
         random_id = random.choice(photo_ids)
         random_photo = models.Photo.objects.get(pk=random_id)
         url = reverse('photo-detail', kwargs={'pk': random_id})
         new_data = {
             'image': self.get_uploaded_test_png()
         }
-        response = self.client.put(url, new_data)
+        headers = {'Owner-Id': current_user_id}
+        response = self.client.put(url, new_data, headers=headers)
         generate_presigned_url.assert_called_once()
         data = response.json()
         self.assertEqual(response.status_code, 200)
