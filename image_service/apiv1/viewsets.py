@@ -49,7 +49,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def destroy(self, request, pk):
         try:
             # ---------------- TODO: add atomic transaction ---------------------
-            photo_to_delete = self.queryset.get(pk=pk)
+            photo_to_delete = self.get_queryset().get(pk=pk)
             object_key = photo_to_delete.path
             photo_to_delete.delete()
             tasks.async_delete_object_from_s3.delay(object_key)
