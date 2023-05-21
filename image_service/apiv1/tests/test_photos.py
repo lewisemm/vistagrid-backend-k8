@@ -160,6 +160,10 @@ class TestPhotos(APITestCase):
 
     @patch('apiv1.tasks.generate_presigned_url')
     def test_put_photo(self, generate_presigned_url):
+        """
+        Validate that a user of current_user_id == photo.owner_id can edit
+        a photo of photo.owner_id == current_user_id
+        """
         current_user_id = self.get_random_user_id()
         _, photo_ids = self.generate_owner_fake_photo_entries(current_user_id)
         random_id = random.choice(photo_ids)
@@ -180,6 +184,10 @@ class TestPhotos(APITestCase):
 
     @patch('apiv1.tasks.async_delete_object_from_s3.delay')
     def test_delete_photo(self, async_delete_object_from_s3):
+        """
+        Validate that a user of current_user_id == photo.owner_id can delete
+        a photo of photo.owner_id == current_user_id
+        """
         current_user_id = self.get_random_user_id()
         count, photo_ids = self.generate_owner_fake_photo_entries(current_user_id)
         random_id = random.choice(photo_ids)
