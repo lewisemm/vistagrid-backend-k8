@@ -105,15 +105,16 @@ class TestPhotos(APITestCase):
         data = {
             'image': self.get_uploaded_test_png()
         }
-        self.client.credentials(HTTP_AUTHORIZATION='fake-auth-token')
-        response = self.client.post(url, data, format='multipart')
+        current_user_id = self.get_random_user_id()
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.post(
+            url, data, format='multipart', headers=headers)
         self.assertEqual(response.status_code, 202)
         # assert photo exists
         photos = models.Photo.objects.all()
         self.assertEqual(len(photos), 1)
         self.assertEqual(photos[0].path, response.json()['path'])
         async_wrapper.assert_called_once()
-        auth_service_handler.assert_called_once()
         generate_presigned_url.assert_called_once()
 
     @patch('apiv1.tasks.generate_presigned_url')
