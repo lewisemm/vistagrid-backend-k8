@@ -8,9 +8,16 @@ from rest_framework.response import Response
 
 from apiv1 import models, serializers, tasks, utils
 
+
 class PhotoViewSet(viewsets.ModelViewSet):
-    queryset = models.Photo.objects.all()
     serializer_class = serializers.PhotoSerializer
+
+    def get_queryset(self):
+        owner_id = self.request.headers.get('Owner-Id', None)
+        if owner_id:
+            owner_id = int(owner_id)
+            return models.Photo.objects.filter(owner_id=owner_id)
+        return models.Photo.objects.none()
 
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
