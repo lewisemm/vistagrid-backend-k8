@@ -308,3 +308,24 @@ class TestPhotos(APITestCase):
         generate_presigned_url.assert_not_called()
         data = response.json()
         self.assertEqual(response.status_code, 403)
+
+    @patch('apiv1.tasks.async_delete_object_from_s3.delay')
+    def test_delete_photo_not_owner_photos(self, async_delete_object_from_s3):
+        """
+        Test that user of `current_user_id` cannot delete photo belonging to
+        other user in `photo-detail` route.
+        """
+        current_user_id = self.get_random_user_id()
+        count, photo_ids = self.generate_random_fake_photo_entries(current_user_id)
+        random_id = random.choice(photo_ids)
+        random_photo = models.Photo.objects.get(pk=random_id)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.delete(url, headers=headers)
+        self.assertEqual(response.status_code, 403)
+        # assert photo not deleted
+        # if no exception is raised, the photo exists
+        photo = models.Photo.objects.get(pk=random_id)
+        self.assertIsNotNone(photo)
+        self.assertEqual(photo, random_photo)
+        async_delete_object_from_s3.assert_not_called()
