@@ -265,3 +265,20 @@ class TestPhotos(APITestCase):
         # assert that photos from other users actually exist in the database
         photos = models.Photo.objects.exclude(owner_id=current_user_id)
         self.assertEqual(len(photos), other_count)
+
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_get_photo_detail_not_owner_photos(self, generate_presigned_url):
+        """
+        Test that user of `current_user_id` cannot access photo details of photo
+        belonging to other user in `photo-detail` route.
+        """
+        current_user_id = self.get_random_user_id()
+        other_count, photo_ids = self.generate_random_fake_photo_entries(
+            current_user_id)
+        random_id = random.choice(photo_ids)
+        random_photo = models.Photo.objects.get(pk=random_id)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.get(url, headers=headers)
+        self.assertEqual(response.status_code, 403)
+        generate_presigned_url.assert_not_called()
