@@ -217,3 +217,25 @@ class TestPhotos(APITestCase):
         # assert photo has not been created
         photos = models.Photo.objects.all()
         self.assertEqual(len(photos), 0)
+
+    def test_post_photo_invalid_owner_id_header(self):
+        """
+        Test the functionality to create photo entries when "Owner-Id" header
+        contains invalid value.
+        Any value that cannot be converted to an int (to represent owner_id) is
+        considered invalid.
+        """
+        # no photos exist yet
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), 0)
+        url = reverse('photo-list')
+        data = {
+            'image': self.get_uploaded_test_png()
+        }
+        headers = {'Owner-Id': 'invalid header'}
+        response = self.client.post(
+            url, data, format='multipart', headers=headers)
+        self.assertEqual(response.status_code, 401)
+        # assert photo has not been created
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), 0)
