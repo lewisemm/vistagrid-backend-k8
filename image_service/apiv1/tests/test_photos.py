@@ -199,3 +199,21 @@ class TestPhotos(APITestCase):
         photos = models.Photo.objects.all()
         self.assertEqual(count - 1, len(photos))
         async_delete_object_from_s3.assert_called_once_with(random_photo.path)
+
+    def test_post_photo_no_owner_id_header(self):
+        """
+        Test the functionality to create photo entries when owner_id information
+        is not passed via the "Owner-Id" header.
+        """
+        # no photos exist yet
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), 0)
+        url = reverse('photo-list')
+        data = {
+            'image': self.get_uploaded_test_png()
+        }
+        response = self.client.post(url, data, format='multipart')
+        self.assertEqual(response.status_code, 401)
+        # assert photo has not been created
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), 0)
