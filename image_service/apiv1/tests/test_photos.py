@@ -282,3 +282,29 @@ class TestPhotos(APITestCase):
         response = self.client.get(url, headers=headers)
         self.assertEqual(response.status_code, 403)
         generate_presigned_url.assert_not_called()
+
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_put_photo_not_owner_photos(self, generate_presigned_url):
+        """
+        Test that user of `current_user_id` cannot edit photo details of photo
+        belonging to other user in `photo-detail` route.
+        """
+        current_user_id = self.get_random_user_id()
+        count, photo_ids = self.generate_random_fake_photo_entries(current_user_id)
+        # assert photos exist
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), count)
+        # assert current_user_id has no photos
+        photos = photos.filter(owner_id=current_user_id)
+        self.assertEqual(len(photos), 0)
+        random_id = random.choice(photo_ids)
+        random_photo = models.Photo.objects.get(pk=random_id)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        new_data = {
+            'image': self.get_uploaded_test_png()
+        }
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.put(url, new_data, headers=headers)
+        generate_presigned_url.assert_not_called()
+        data = response.json()
+        self.assertEqual(response.status_code, 403)
