@@ -6,11 +6,18 @@ import random
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from apiv1 import models, serializers, tasks, utils
+from apiv1 import (
+    models,
+    serializers,
+    tasks,
+    utils,
+    permissions as api_permissions
+)
 
 
 class PhotoViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.PhotoSerializer
+    permission_classes = [api_permissions.OnlyOwnerCanAccess]
 
     def get_queryset(self):
         owner_id = self.request.headers.get('Owner-Id', None)
