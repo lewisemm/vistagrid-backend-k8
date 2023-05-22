@@ -9,7 +9,6 @@
 * AWS_ACCESS_KEY_ID
 * S3_BUCKET
 * CELERY_BROKER_URL
-* AUTH_SERVICE_URL
 
 ### Background Services
 The following background services are required to run the app.
