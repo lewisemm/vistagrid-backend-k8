@@ -151,7 +151,7 @@ class TestPhotos(APITestCase):
         random_id = random.choice(photo_ids)
         random_photo = models.Photo.objects.get(pk=random_id)
         url = reverse('photo-detail', kwargs={'pk': random_id})
-        headers = {'Owner-Id': current_user_id}
+        headers = {'Owner-Id': f'{current_user_id}'}
         response = self.client.get(url, headers=headers)
         generate_presigned_url.assert_called_once()
         data = response.json()
@@ -172,7 +172,7 @@ class TestPhotos(APITestCase):
         new_data = {
             'image': self.get_uploaded_test_png()
         }
-        headers = {'Owner-Id': current_user_id}
+        headers = {'Owner-Id': f'{current_user_id}'}
         response = self.client.put(url, new_data, headers=headers)
         generate_presigned_url.assert_called_once()
         data = response.json()
@@ -193,7 +193,7 @@ class TestPhotos(APITestCase):
         random_id = random.choice(photo_ids)
         random_photo = models.Photo.objects.get(pk=random_id)
         url = reverse('photo-detail', kwargs={'pk': random_id})
-        headers = {'Owner-Id': current_user_id}
+        headers = {'Owner-Id': f'{current_user_id}'}
         response = self.client.delete(url, headers=headers)
         self.assertEqual(response.status_code, 204)
         photos = models.Photo.objects.all()
