@@ -60,9 +60,21 @@ class PhotoViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk):
+        owner_id = self.request.headers.get('Owner-Id', None)
         try:
+            photo_to_delete = models.Photo.objects.get(pk=pk)
+            if not utils.owner_id_header_is_valid(owner_id):
+                return Response(
+                    {'error': 'Invalid value for "Owner-Id" header.'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            owner_id = int(owner_id)
+            if photo_to_delete.owner_id != owner_id:
+                return Response(
+                    {'error': 'Access to this resource is restricted to owner.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
             # ---------------- TODO: add atomic transaction ---------------------
-            photo_to_delete = self.get_queryset().get(pk=pk)
             object_key = photo_to_delete.path
             photo_to_delete.delete()
             tasks.async_delete_object_from_s3.delay(object_key)
