@@ -239,3 +239,29 @@ class TestPhotos(APITestCase):
         # assert photo has not been created
         photos = models.Photo.objects.all()
         self.assertEqual(len(photos), 0)
+
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_get_photo_list_not_owner_photos(self, generate_presigned_url):
+        """
+        Test that user of `current_user_id` cannot list photos belonging to
+        other users in the `photo-list` route.
+        """
+        current_user_id = self.get_random_user_id()
+        # generate random entries that do not belong to current_user_id
+        other_count, _ = self.generate_random_fake_photo_entries(current_user_id)
+        url = reverse('photo-list')
+        # assert that current_user_id has no photos
+        photos = models.Photo.objects.filter(owner_id=current_user_id)
+        self.assertEqual(len(photos), 0)
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.get(url, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 0)
+        calls_made = []
+        for photo in models.Photo.objects.filter(owner_id=current_user_id):
+            calls_made.append(call(photo.path))
+        generate_presigned_url.assert_has_calls(calls_made, any_order=True)
+        # assert that photos from other users actually exist in the database
+        photos = models.Photo.objects.exclude(owner_id=current_user_id)
+        self.assertEqual(len(photos), other_count)
