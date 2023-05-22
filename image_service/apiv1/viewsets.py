@@ -3,6 +3,7 @@ import datetime
 import json
 import random
 
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
@@ -25,6 +26,11 @@ class PhotoViewSet(viewsets.ModelViewSet):
             owner_id = int(owner_id)
             return models.Photo.objects.filter(owner_id=owner_id)
         return models.Photo.objects.none()
+
+    def get_object(self):
+        obj = models.Photo.objects.get(pk=self.kwargs['pk'])
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
