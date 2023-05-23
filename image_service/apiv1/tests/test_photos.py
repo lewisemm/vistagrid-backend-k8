@@ -330,3 +330,20 @@ class TestPhotos(APITestCase, UtilityHelpers):
         self.assertIsNotNone(photo)
         self.assertEqual(photo, random_photo)
         async_delete_object_from_s3.assert_not_called()
+
+    @patch('apiv1.tasks.async_delete_object_from_s3.s')
+    def test_delete_photo_404(self, async_delete_object_from_s3):
+        """
+        Test delete photo operation when photo does not exist.
+        """
+        current_user_id = self.get_random_user_id()
+        random_id = int(random.random() * 1000)
+        with self.assertRaises(models.Photo.DoesNotExist):
+            models.Photo.objects.get(pk=random_id)
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), 0)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.delete(url, headers=headers)
+        self.assertEqual(response.status_code, 404)
+        async_delete_object_from_s3.assert_not_called()
