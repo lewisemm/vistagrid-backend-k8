@@ -1,6 +1,5 @@
 from rest_framework import permissions, exceptions
 
-from apiv1 import utils
 
 class OnlyOwnerCanAccess(permissions.BasePermission):
     def has_object_permission(self, request, view, object):
