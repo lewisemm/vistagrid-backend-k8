@@ -12,17 +12,6 @@ from apiv1 import models
 from apiv1.tests.helpers import UtilityHelpers
 
 
-class MockUserServiceResponse:
-    """
-    Mock response from the user_service.
-    """
-    def __init__(self):
-        self.code = 200
-
-    def readlines(self):
-        return ['{"user_id": 2}'.encode('utf-8')]
-
-
 class TestAPITransactions(TransactionTestCase, UtilityHelpers):
     def setUp(self):
         self.client = APIClient()
