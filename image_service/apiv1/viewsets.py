@@ -10,13 +10,15 @@ from apiv1 import (
     serializers,
     tasks,
     utils,
-    permissions as api_permissions
+    permissions as api_permissions,
+    authentication as api_auth
 )
 
 
 class PhotoViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.PhotoSerializer
     permission_classes = [api_permissions.OnlyOwnerCanAccess]
+    authentication_classes = [api_auth.CustomAuthentication]
 
     def get_queryset(self):
         owner_id = self.request.headers.get('Owner-Id', None)
