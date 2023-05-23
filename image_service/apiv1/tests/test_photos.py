@@ -7,6 +7,7 @@ from rest_framework.test import APITestCase, APIClient
 
 
 from apiv1 import models
+from apiv1.tests.helpers import UtilityHelpers
 
 
 class MockUserServiceResponse:
@@ -20,7 +21,6 @@ class MockUserServiceResponse:
         return ['{"user_id": 2}'.encode('utf-8')]
 
 
-class TestPhotos(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.fake = faker.Faker()
@@ -57,6 +57,16 @@ class TestPhotos(APITestCase):
         self.assertEqual(photos[0].path, response.json()['path'])
         async_wrapper.assert_called_once()
         generate_presigned_url.assert_called_once()
+
+
+class TestPhotos(APITestCase, UtilityHelpers):
+    def setUp(self):
+        self.client = APIClient()
+        self.fake = faker.Faker()
+
+    def tearDown(self):
+        del self.client
+        del self.fake
 
     @patch('apiv1.tasks.generate_presigned_url')
     def test_get_photo_list(self, generate_presigned_url):
