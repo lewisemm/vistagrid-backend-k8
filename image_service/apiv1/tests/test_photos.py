@@ -13,6 +13,10 @@ from apiv1.tests.helpers import UtilityHelpers
 
 
 class TestAPITransactions(TransactionTestCase, UtilityHelpers):
+    """
+    Contains tests that verify execution of callbacks that are supplied to
+    `transaction.on_commit` within the `transaction.atomic` context.
+    """
     def setUp(self):
         self.client = APIClient()
         self.fake = faker.Faker()
@@ -103,6 +107,9 @@ class TestAPITransactions(TransactionTestCase, UtilityHelpers):
 
 
 class TestPhotos(APITestCase, UtilityHelpers):
+    """
+    Contains tests that verify expected API behaviour.
+    """
     def setUp(self):
         self.client = APIClient()
         self.fake = faker.Faker()
