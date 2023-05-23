@@ -7,9 +7,7 @@ class OnlyOwnerCanAccess(permissions.BasePermission):
         """
         Restrict photo access to photo owners at `photo-detail` route.
         """
-        current_user_id = request.headers.get('Owner-Id', None)
-        current_user_id = int(current_user_id)
-        if not (object.owner_id == current_user_id):
+        if not (object.owner_id == request.user):
             raise exceptions.PermissionDenied(
                 "Access to this resource is restricted to owner.")
         return True

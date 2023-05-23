@@ -21,7 +21,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
     authentication_classes = [api_auth.CustomAuthentication]
 
     def get_queryset(self):
-        owner_id = self.request.headers.get('Owner-Id', None)
+        owner_id = self.request.user
         if owner_id:
             owner_id = int(owner_id)
             return models.Photo.objects.filter(owner_id=owner_id)
@@ -64,11 +64,9 @@ class PhotoViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk):
-        owner_id = request.headers.get('Owner-Id', None)
         try:
             photo_to_delete = models.Photo.objects.get(pk=pk)
-            owner_id = int(owner_id)
-            if photo_to_delete.owner_id != owner_id:
+            if photo_to_delete.owner_id != request.user:
                 return Response(
                     {'error': 'Access to this resource is restricted to owner.'},
                     status=status.HTTP_403_FORBIDDEN
