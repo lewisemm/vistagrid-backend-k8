@@ -55,7 +55,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
                         serializers.PhotoSerializer(photo).data,
                         status=status.HTTP_202_ACCEPTED
                     )
-                except (Error, Exception):
+                except Exception:
                     return Response(
                         {'error': 'Request could not be completed.'},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -89,7 +89,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
                         tasks.async_delete_object_from_s3.s(object_key).delay
                     )
                 return Response({}, status=status.HTTP_204_NO_CONTENT)
-            except (Error, Exception):
+            except Exception:
                 return Response(
                     {'error': 'Request could not be completed.'},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
