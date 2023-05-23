@@ -66,11 +66,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def destroy(self, request, pk):
         try:
             photo_to_delete = models.Photo.objects.get(pk=pk)
-            if photo_to_delete.owner_id != request.user:
-                return Response(
-                    {'error': 'Access to this resource is restricted to owner.'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            self.check_object_permissions(request, photo_to_delete)
             try:
                 with transaction.atomic():
                     object_key = photo_to_delete.path
