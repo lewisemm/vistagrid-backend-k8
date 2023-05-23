@@ -347,3 +347,14 @@ class TestPhotos(APITestCase, UtilityHelpers):
         response = self.client.delete(url, headers=headers)
         self.assertEqual(response.status_code, 404)
         async_delete_object_from_s3.assert_not_called()
+
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_get_photo_list_owner_id_not_provided(self, generate_presigned_url):
+        """
+        Test to validate that a get request without a valid "Owner-Id" header
+        value cannot access the `photo-list` route.
+        """
+        url = reverse('photo-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)
+        generate_presigned_url.assert_not_called()
