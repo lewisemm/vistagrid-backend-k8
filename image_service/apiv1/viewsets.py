@@ -3,6 +3,7 @@ import datetime
 import json
 import random
 
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -74,11 +75,12 @@ class PhotoViewSet(viewsets.ModelViewSet):
                     {'error': 'Access to this resource is restricted to owner.'},
                     status=status.HTTP_403_FORBIDDEN
                 )
-            # ---------------- TODO: add atomic transaction ---------------------
-            object_key = photo_to_delete.path
-            photo_to_delete.delete()
-            tasks.async_delete_object_from_s3.delay(object_key)
-            # ---------------- end atomic transaction ---------------------
+            with transaction.atomic():
+                object_key = photo_to_delete.path
+                photo_to_delete.delete()
+                transaction.on_commit(
+                    tasks.async_delete_object_from_s3.s(object_key).delay
+                )
             return Response({}, status=status.HTTP_204_NO_CONTENT)
         except models.Photo.DoesNotExist:
             return Response({}, status=status.HTTP_404_NOT_FOUND)

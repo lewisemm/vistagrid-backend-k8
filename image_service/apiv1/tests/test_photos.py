@@ -182,7 +182,7 @@ class TestPhotos(APITestCase):
         # old data updated to new data
         self.assertEqual(random_photo.path, data['path'])
 
-    @patch('apiv1.tasks.async_delete_object_from_s3.delay')
+    @patch('apiv1.tasks.async_delete_object_from_s3.s')
     def test_delete_photo(self, async_delete_object_from_s3):
         """
         Validate that a user of current_user_id == photo.owner_id can delete
