@@ -2,6 +2,7 @@ import random
 from unittest.mock import patch, call
 
 import faker
+from django.db import IntegrityError
 from django.test import TransactionTestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
@@ -52,6 +53,32 @@ class TestAPITransactions(TransactionTestCase, UtilityHelpers):
         self.assertEqual(photos[0].path, response.json()['path'])
         async_wrapper.assert_called_once()
         generate_presigned_url.assert_called_once()
+
+    @patch('apiv1.models.Photo.save', side_effect=IntegrityError)
+    @patch('apiv1.tasks.async_upload_to_s3_wrapper')
+    def test_post_photo_atomic_transaction_failure(
+        self, async_wrapper, photo_save
+    ):
+        """
+        Test photo create functionality when an error occurs within a
+        transaction.
+        """
+        # no photos exist yet
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), 0)
+        url = reverse('photo-list')
+        data = {
+            'image': self.get_uploaded_test_png()
+        }
+        current_user_id = self.get_random_user_id()
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.post(
+            url, data, format='multipart', headers=headers)
+        self.assertEqual(response.status_code, 500)
+        # assert photos still do not exist
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), 0)
+        async_wrapper.assert_not_called()
 
 
 class TestPhotos(APITestCase, UtilityHelpers):
