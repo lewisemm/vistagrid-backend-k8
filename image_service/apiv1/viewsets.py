@@ -33,7 +33,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            owner_id = self.request.headers.get('Owner-Id', None)
+            owner_id = request.headers.get('Owner-Id', None)
             if utils.owner_id_header_is_valid(owner_id):
                 img = request.data['image']
                 fmt = "%Y_%m_%d__%H_%M_%S"
@@ -68,7 +68,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk):
-        owner_id = self.request.headers.get('Owner-Id', None)
+        owner_id = request.headers.get('Owner-Id', None)
         try:
             photo_to_delete = models.Photo.objects.get(pk=pk)
             if not utils.owner_id_header_is_valid(owner_id):
