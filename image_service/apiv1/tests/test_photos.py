@@ -2,6 +2,7 @@ import random
 from unittest.mock import patch, call
 
 import faker
+from django.test import TransactionTestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 
@@ -21,15 +22,9 @@ class MockUserServiceResponse:
         return ['{"user_id": 2}'.encode('utf-8')]
 
 
+class TestAPITransactions(TransactionTestCase, UtilityHelpers):
     def setUp(self):
         self.client = APIClient()
-        self.fake = faker.Faker()
-
-    def tearDown(self):
-        del self.client
-        del self.fake
-
-
 
     @patch('apiv1.tasks.generate_presigned_url')
     @patch('apiv1.tasks.async_upload_to_s3_wrapper')
