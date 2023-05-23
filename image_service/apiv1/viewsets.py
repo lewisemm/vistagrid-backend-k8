@@ -46,7 +46,11 @@ class PhotoViewSet(viewsets.ModelViewSet):
                         photo.owner_id = owner_id
                         photo.save()
                         transaction.on_commit(
-                            lambda: asyncio.run(tasks.async_upload_to_s3_wrapper(img, file_name, img.content_type))
+                            lambda: asyncio.run(
+                                tasks.async_upload_to_s3_wrapper(
+                                    img, file_name, img.content_type
+                                )
+                            )
                         )
                     return Response(
                         serializers.PhotoSerializer(photo).data,
