@@ -1,10 +1,7 @@
-import asyncio
 import base64
 
 
 from celery import shared_task
-
-
 from aws import s3
 
 def generate_presigned_url(object_key):

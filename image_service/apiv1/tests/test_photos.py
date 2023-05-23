@@ -12,18 +12,11 @@ from apiv1 import models
 from apiv1.tests.helpers import UtilityHelpers
 
 
-class MockUserServiceResponse:
-    """
-    Mock response from the user_service.
-    """
-    def __init__(self):
-        self.code = 200
-
-    def readlines(self):
-        return ['{"user_id": 2}'.encode('utf-8')]
-
-
 class TestAPITransactions(TransactionTestCase, UtilityHelpers):
+    """
+    Contains tests that verify execution of callbacks that are supplied to
+    `transaction.on_commit` within the `transaction.atomic` context.
+    """
     def setUp(self):
         self.client = APIClient()
         self.fake = faker.Faker()
@@ -114,6 +107,9 @@ class TestAPITransactions(TransactionTestCase, UtilityHelpers):
 
 
 class TestPhotos(APITestCase, UtilityHelpers):
+    """
+    Contains tests that verify expected API behaviour.
+    """
     def setUp(self):
         self.client = APIClient()
         self.fake = faker.Faker()
@@ -334,3 +330,31 @@ class TestPhotos(APITestCase, UtilityHelpers):
         self.assertIsNotNone(photo)
         self.assertEqual(photo, random_photo)
         async_delete_object_from_s3.assert_not_called()
+
+    @patch('apiv1.tasks.async_delete_object_from_s3.s')
+    def test_delete_photo_404(self, async_delete_object_from_s3):
+        """
+        Test delete photo operation when photo does not exist.
+        """
+        current_user_id = self.get_random_user_id()
+        random_id = int(random.random() * 1000)
+        with self.assertRaises(models.Photo.DoesNotExist):
+            models.Photo.objects.get(pk=random_id)
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), 0)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.delete(url, headers=headers)
+        self.assertEqual(response.status_code, 404)
+        async_delete_object_from_s3.assert_not_called()
+
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_get_photo_list_owner_id_not_provided(self, generate_presigned_url):
+        """
+        Test to validate that a get request without a valid "Owner-Id" header
+        value cannot access the `photo-list` route.
+        """
+        url = reverse('photo-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)
+        generate_presigned_url.assert_not_called()

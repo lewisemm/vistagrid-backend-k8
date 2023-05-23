@@ -10,6 +10,10 @@ from apiv1 import models
 
 
 class UtilityHelpers:
+    """
+    Contains helpers that are used to generate random data in the database
+    before the test assertions are made.
+    """
     def get_uploaded_test_png(self):
         test_png_relative_path = pathlib.Path('apiv1/tests/uploadable/test.png')
         self.test_png_path = os.path.join(

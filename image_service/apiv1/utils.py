@@ -1,6 +1,6 @@
 def owner_id_header_is_valid(owner_id):
     """
-    Returns True of owner_id value is valid and returns False if otherwise.
+    Returns True if owner_id value is valid and returns False if otherwise.
     """
     if owner_id == None:
         return False
