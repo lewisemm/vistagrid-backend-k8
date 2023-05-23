@@ -35,49 +35,38 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            owner_id = request.headers.get('Owner-Id', None)
-            if utils.owner_id_header_is_valid(owner_id):
-                img = request.data['image']
-                fmt = "%Y_%m_%d__%H_%M_%S"
-                current_time = datetime.datetime.now()
-                formatted_time = datetime.datetime.strftime(current_time, fmt)
-                file_name = f'photos/{formatted_time}-{img.name}'
-                try:
-                    with transaction.atomic():
-                        photo = models.Photo(path=file_name)
-                        photo.owner_id = owner_id
-                        photo.save()
-                        transaction.on_commit(
-                            lambda: asyncio.run(
-                                tasks.async_upload_to_s3_wrapper(
-                                    img, file_name, img.content_type
-                                )
+            img = request.data['image']
+            fmt = "%Y_%m_%d__%H_%M_%S"
+            current_time = datetime.datetime.now()
+            formatted_time = datetime.datetime.strftime(current_time, fmt)
+            file_name = f'photos/{formatted_time}-{img.name}'
+            try:
+                with transaction.atomic():
+                    photo = models.Photo(path=file_name)
+                    photo.owner_id = request.user
+                    photo.save()
+                    transaction.on_commit(
+                        lambda: asyncio.run(
+                            tasks.async_upload_to_s3_wrapper(
+                                img, file_name, img.content_type
                             )
                         )
-                    return Response(
-                        serializers.PhotoSerializer(photo).data,
-                        status=status.HTTP_202_ACCEPTED
                     )
-                except Exception:
-                    return Response(
-                        {'error': 'Request could not be completed.'},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                    )
-            return Response(
-                {'error': 'Invalid value for "Owner-Id" header.'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+                return Response(
+                    serializers.PhotoSerializer(photo).data,
+                    status=status.HTTP_202_ACCEPTED
+                )
+            except Exception:
+                return Response(
+                    {'error': 'Request could not be completed.'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk):
         owner_id = request.headers.get('Owner-Id', None)
         try:
             photo_to_delete = models.Photo.objects.get(pk=pk)
-            if not utils.owner_id_header_is_valid(owner_id):
-                return Response(
-                    {'error': 'Invalid value for "Owner-Id" header.'},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
             owner_id = int(owner_id)
             if photo_to_delete.owner_id != owner_id:
                 return Response(
