@@ -43,17 +43,23 @@ class PhotoViewSet(viewsets.ModelViewSet):
                 current_time = datetime.datetime.now()
                 formatted_time = datetime.datetime.strftime(current_time, fmt)
                 file_name = f'photos/{formatted_time}-{img.name}'
-                with transaction.atomic():
-                    photo = models.Photo(path=file_name)
-                    photo.owner_id = owner_id
-                    photo.save()
-                    transaction.on_commit(
-                        lambda: asyncio.run(tasks.async_upload_to_s3_wrapper(img, file_name, img.content_type))
+                try:
+                    with transaction.atomic():
+                        photo = models.Photo(path=file_name)
+                        photo.owner_id = owner_id
+                        photo.save()
+                        transaction.on_commit(
+                            lambda: asyncio.run(tasks.async_upload_to_s3_wrapper(img, file_name, img.content_type))
+                        )
+                    return Response(
+                        serializers.PhotoSerializer(photo).data,
+                        status=status.HTTP_202_ACCEPTED
                     )
-                return Response(
-                    serializers.PhotoSerializer(photo).data,
-                    status=status.HTTP_202_ACCEPTED
-                )
+                except (Error, Exception):
+                    return Response(
+                        {'error': 'Request could not be completed.'},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
             return Response(
                 {'error': 'Invalid value for "Owner-Id" header.'},
                 status=status.HTTP_401_UNAUTHORIZED
@@ -75,12 +81,18 @@ class PhotoViewSet(viewsets.ModelViewSet):
                     {'error': 'Access to this resource is restricted to owner.'},
                     status=status.HTTP_403_FORBIDDEN
                 )
-            with transaction.atomic():
-                object_key = photo_to_delete.path
-                photo_to_delete.delete()
-                transaction.on_commit(
-                    tasks.async_delete_object_from_s3.s(object_key).delay
+            try:
+                with transaction.atomic():
+                    object_key = photo_to_delete.path
+                    photo_to_delete.delete()
+                    transaction.on_commit(
+                        tasks.async_delete_object_from_s3.s(object_key).delay
+                    )
+                return Response({}, status=status.HTTP_204_NO_CONTENT)
+            except (Error, Exception):
+                return Response(
+                    {'error': 'Request could not be completed.'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
-            return Response({}, status=status.HTTP_204_NO_CONTENT)
         except models.Photo.DoesNotExist:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
