@@ -26,6 +26,11 @@ class MockUserServiceResponse:
 class TestAPITransactions(TransactionTestCase, UtilityHelpers):
     def setUp(self):
         self.client = APIClient()
+        self.fake = faker.Faker()
+
+    def tearDown(self):
+        del self.client
+        del self.fake
 
     @patch('apiv1.tasks.generate_presigned_url')
     @patch('apiv1.tasks.async_upload_to_s3_wrapper')
@@ -79,6 +84,33 @@ class TestAPITransactions(TransactionTestCase, UtilityHelpers):
         photos = models.Photo.objects.all()
         self.assertEqual(len(photos), 0)
         async_wrapper.assert_not_called()
+
+    @patch('apiv1.models.Photo.delete', side_effect=IntegrityError)
+    @patch('apiv1.tasks.async_delete_object_from_s3.delay')
+    def test_delete_photo_atomic_transaction_failure(
+        self, async_delete_object_from_s3, photo_delete
+    ):
+        """
+        Test delete photo functionality when an error occurs within a
+        transaction.
+        """
+        current_user_id = self.get_random_user_id()
+        count, photo_ids = self.generate_owner_fake_photo_entries(current_user_id)
+        random_id = random.choice(photo_ids)
+        random_photo = models.Photo.objects.get(pk=random_id)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.delete(url, headers=headers)
+        self.assertEqual(response.status_code, 500)
+        # assert photo not deleted
+        # if no exception is raised, the photo exists
+        photo = models.Photo.objects.get(pk=random_id)
+        self.assertIsNotNone(photo)
+        self.assertEqual(photo, random_photo)
+        # photo count should remain the same as before
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), count)
+        async_delete_object_from_s3.assert_not_called()
 
 
 class TestPhotos(APITestCase, UtilityHelpers):
