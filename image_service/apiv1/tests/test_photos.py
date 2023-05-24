@@ -413,3 +413,27 @@ class TestPhotos(APITestCase, UtilityHelpers):
             upload_to_s3.assert_not_called()
             self.assertEqual(response.status_code, 500)
 
+    @patch('apiv1.tasks.async_upload_to_s3_wrapper')
+    @patch('apiv1.tasks.async_delete_object_from_s3.s')
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_put_photo_missing_file_data(
+        self, generate_presigned_url, delete_from_s3, upload_to_s3
+    ):
+        """
+        Test put operation on photo when file data is missing.
+        """
+        current_user_id = self.get_random_user_id()
+        count, photo_ids = self.generate_owner_fake_photo_entries(current_user_id)
+        # assert photos exist
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), count)
+        random_id = random.choice(photo_ids)
+        random_photo = models.Photo.objects.get(pk=random_id)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        new_data = {}
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.put(url, new_data, headers=headers)
+        generate_presigned_url.assert_not_called()
+        delete_from_s3.assert_not_called()
+        upload_to_s3.assert_not_called()
+        self.assertEqual(response.status_code, 400)
