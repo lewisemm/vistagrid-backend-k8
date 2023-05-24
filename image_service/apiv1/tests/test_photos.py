@@ -357,3 +357,29 @@ class TestPhotos(APITestCase, UtilityHelpers):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
         generate_presigned_url.assert_not_called()
+
+    @patch('apiv1.tasks.async_upload_to_s3_wrapper')
+    @patch('apiv1.tasks.async_delete_object_from_s3.s')
+    @patch('apiv1.tasks.generate_presigned_url')
+    def test_put_photo_404(
+        self, generate_presigned_url, delete_from_s3, upload_to_s3
+    ):
+        """
+        Test put photo operation when photo does not exist.
+        """
+        current_user_id = self.get_random_user_id()
+        # assert photos do not exist
+        photos = models.Photo.objects.all()
+        self.assertEqual(len(photos), 0)
+        random_id = int(random.random() * 1000)
+        url = reverse('photo-detail', kwargs={'pk': random_id})
+        new_data = {
+            'image': self.get_uploaded_test_png()
+        }
+        headers = {'Owner-Id': f'{current_user_id}'}
+        response = self.client.put(url, new_data, headers=headers)
+        generate_presigned_url.assert_not_called()
+        delete_from_s3.assert_not_called()
+        upload_to_s3.assert_not_called()
+        self.assertEqual(response.status_code, 404)
+
