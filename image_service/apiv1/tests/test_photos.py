@@ -177,7 +177,7 @@ class TestPhotos(APITestCase, UtilityHelpers):
         response = self.client.put(url, new_data, headers=headers)
         generate_presigned_url.assert_called_once()
         data = response.json()
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 202)
         # fetch updated data from db
         random_photo.refresh_from_db()
         # old data updated to new data
@@ -307,7 +307,6 @@ class TestPhotos(APITestCase, UtilityHelpers):
         headers = {'Owner-Id': f'{current_user_id}'}
         response = self.client.put(url, new_data, headers=headers)
         generate_presigned_url.assert_not_called()
-        data = response.json()
         self.assertEqual(response.status_code, 403)
 
     @patch('apiv1.tasks.async_delete_object_from_s3.delay')
