@@ -32,7 +32,7 @@ services:
     ports:
       - "5001:5001"
   user_service:
-    image: user_service:1.0
+    image: lewisemm/user_service:v2023.5
     build:
       context: user_service/
     environment:
@@ -46,7 +46,7 @@ services:
       - postgres_db
       - jwt_nginx
   image_service:
-    image: image_service:v0.1
+    image: lewisemm/image_service:v2023.5
     build:
       context: image_service/
     environment:
