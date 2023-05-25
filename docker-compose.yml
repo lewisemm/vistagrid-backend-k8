@@ -17,7 +17,7 @@ services:
     ports:
       - "3306:3306"
   postgres_db:
-    image: postgres:9.6.17-alpine
+    image: postgres:15.3-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
