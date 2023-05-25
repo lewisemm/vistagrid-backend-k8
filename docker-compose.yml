@@ -57,8 +57,8 @@ services:
       AWS_ACCESS_KEY_ID: $IMAGE_SERVICE_AWS_ACCESS_KEY_ID
       S3_BUCKET: $IMAGE_SERVICE_S3_BUCKET
       CELERY_BROKER_URL: $IMAGE_SERVICE_CELERY_BROKER_URL
-    ports:
     container_name: image_service
+    ports:
       - "8000:8000"
     depends_on:
       - mysql_db
