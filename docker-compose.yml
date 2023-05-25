@@ -9,20 +9,20 @@ services:
   mysql_db:
     image: mysql:8.0.31
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 1
-      MYSQL_USER: imsuser
-      MYSQL_PASSWORD: imsuser_pass
-      MYSQL_DATABASE: image_service
+      MYSQL_ALLOW_EMPTY_PASSWORD: $MYSQL_ALLOW_EMPTY_PASSWORD
+      MYSQL_USER: $MYSQL_USER
+      MYSQL_PASSWORD: $MYSQL_PASSWORD
+      MYSQL_DATABASE: $MYSQL_DATABASE
     container_name: mysequel
     ports:
       - "3306:3306"
   postgres_db:
     image: postgres:15.3-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: vistagrid
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_HOST_AUTH_METHOD: $POSTGRES_HOST_AUTH_METHOD
     container_name: postgres_db
   jwt_nginx:
     image: lewisemm/vistagrid-nginx:v1.24.0
@@ -36,9 +36,9 @@ services:
     build:
       context: user_service/
     environment:
-      SQLALCHEMY_DATABASE_URI: postgresql://postgres:password@postgres_db:5432/vistagrid
-      JWT_SECRET_KEY: 'super-secret'
-      USER_SERVICE_CONFIG_MODULE: user_service.config.config.DevConfig
+      SQLALCHEMY_DATABASE_URI: $USER_SERVICE_SQLALCHEMY_DATABASE_URI
+      JWT_SECRET_KEY: $USER_SERVICE_JWT_SECRET_KEY
+      USER_SERVICE_CONFIG_MODULE: $USER_SERVICE_CONFIG_MODULE
     ports:
       - "5000:5000"
     container_name: user_service
