@@ -15,7 +15,7 @@ spec:
         service: user-deployment
     spec:
       containers:
-      - image: lewisemm/userservice:v0.2
+      - image: lewisemm/user_service:v2023.5
         name: userservice
         resources:
           requests:
