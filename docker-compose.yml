@@ -40,11 +40,14 @@ services:
       JWT_SECRET_KEY: $USER_SERVICE_JWT_SECRET_KEY
       USER_SERVICE_CONFIG_MODULE: $USER_SERVICE_CONFIG_MODULE
     ports:
-      - "5000:5000"
+      - "5001:5001"
     container_name: user_service
     depends_on:
       - postgres_db
       - jwt_nginx
+    command: [
+      "python", "-m", "flask", "run", "--host=0.0.0.0", "-p 5001"
+    ]
   image_service:
     image: lewisemm/image_service:v2023.5
     build:
