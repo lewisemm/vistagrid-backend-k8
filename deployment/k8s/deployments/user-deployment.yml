@@ -15,7 +15,7 @@ spec:
         service: user-deployment
     spec:
       containers:
-      - image: lewisemm/userservice:v0.2
+      - image: lewisemm/user_service:v2023.5
         name: userservice
         resources:
           requests:
@@ -26,29 +26,14 @@ spec:
           valueFrom:
             secretKeyRef:
               name: env-secret
-              key: SQLALCHEMY_DATABASE_URI
+              key: USER_SERVICE_SQLALCHEMY_DATABASE_URI
         - name: JWT_SECRET_KEY
           valueFrom:
             secretKeyRef:
               name: env-secret
-              key: JWT_SECRET_KEY
+              key: USER_SERVICE_JWT_SECRET_KEY
         - name: USER_SERVICE_CONFIG_MODULE
           valueFrom:
             configMapKeyRef:
               name: env-config
               key: USER_SERVICE_CONFIG_MODULE
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            configMapKeyRef:
-              name: env-config
-              key: POSTGRES_PASSWORD
-        - name: POSTGRES_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: env-config
-              key: POSTGRES_HOST
-        - name: POSTGRES_DB
-          valueFrom:
-            configMapKeyRef:
-              name: env-config
-              key: POSTGRES_DB

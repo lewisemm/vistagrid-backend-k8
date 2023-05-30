@@ -1,8 +1,0 @@
-version: '3'
-services:
-  reverseproxy:
-    build:
-      context: ./reverseproxy/
-    image: lewisemm/vistagrid-k8-reverseproxy:v0.5
-    ports:
-      - "5000:5000"

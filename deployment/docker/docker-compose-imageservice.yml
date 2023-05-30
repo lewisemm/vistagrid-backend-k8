@@ -1,6 +1,0 @@
-version: '3'
-services:
-  image_service:
-    build:
-      context: ./image_service/
-    image: lewisemm/imageservice:v0.2

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: imageservice-deployment
+  name: imageservice-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: imageservice-deployment
+  template:
+    metadata:
+      labels:
+        service: imageservice-deployment
+    spec:
+      containers:
+      - image: lewisemm/image_service:v2023.5
+        name: imageservice
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: env-secret
+              key: IMAGE_SERVICE_DATABASE_URL
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: env-secret
+              key: IMAGE_SERVICE_SECRET_KEY
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: env-secret
+              key: IMAGE_SERVICE_AWS_SECRET_ACCESS_KEY
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: env-secret
+              key: IMAGE_SERVICE_AWS_ACCESS_KEY_ID
+        - name: S3_BUCKET
+          valueFrom:
+            secretKeyRef:
+              name: env-secret
+              key: IMAGE_SERVICE_S3_BUCKET
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            secretKeyRef:
+              name: env-secret
+              key: IMAGE_SERVICE_CELERY_BROKER_URL
+        - name: DJANGO_SETTINGS_MODULE
+          valueFrom:
+            configMapKeyRef:
+              name: env-config
+              key: IMAGE_SERVICE_DJANGO_SETTINGS_MODULE
