@@ -30,7 +30,7 @@ services:
       context: reverseproxy/
     container_name: vistagrid_ngx
     ports:
-      - "5001:5001"
+      - "5000:5000"
   user_service:
     image: lewisemm/user_service:v2023.5
     build:
