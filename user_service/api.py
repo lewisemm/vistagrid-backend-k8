@@ -1,3 +1,6 @@
+import os
+import redis
+
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from flask_apispec.extension import FlaskApiSpec
@@ -21,11 +24,23 @@ app.config.update({
     'APISPEC_SWAGGER_UI_URL': '/swagger-ui/'
 })
 docs = FlaskApiSpec(app)
+redis_conn = redis.Redis(
+    host=os.environ['REDIS_HOST'],
+    port=os.environ['REDIS_PORT'],
+    decode_responses=True
+)
 
 
 @app.route('/')
 def hello_world():
     return 'Hello, World!\n'
+
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    token_in_redis = redis_conn.get(jti)
+    return token_in_redis is not None
 
 
 api.add_resource(UserAuth, '/api/user/auth', endpoint='user-auth')
