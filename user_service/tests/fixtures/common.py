@@ -38,3 +38,16 @@ def existing_user(client, credentials):
         models.db.session.add(user)
         models.db.session.commit()
         yield user
+
+@pytest.fixture
+def redis_mock(mocker):
+    cache = {}
+    def setter(key, value):
+        cache[key] = value
+        return True
+    def getter(key):
+        return cache.get(key, None)
+    redis = mocker.patch('user_service.api.redis_conn')
+    redis.set.side_effect = lambda key, value, exp: setter(key, value)
+    redis.get.side_effect = lambda key: getter(key)
+    return redis

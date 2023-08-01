@@ -7,7 +7,8 @@ from faker import Faker
 from user_service.tests.fixtures.common import (
     client,
     credentials,
-    existing_user
+    existing_user,
+    redis_mock
 )
 from user_service import models
 
@@ -93,7 +94,7 @@ def test_identify_user_from_jwt_no_authorization_header(client):
         assert res.status_code == 401
 
 def test_identify_user_from_jwt_valid_authorization_header(
-        client, existing_user, credentials):
+        client, existing_user, credentials, redis_mock):
     """
     Test functionality to identify request owner from request when valid
     `Authorization` header is provided.
@@ -130,3 +131,48 @@ def test_identify_user_from_jwt_invalid_authorization_header(client):
             headers={'Authorization': f'Bearer {token}'}
         )
         assert res.status_code == 422
+
+def test_revoke_token_via_logout(client, credentials, redis_mock):
+    """
+    Test functionality to revoke access token via logout route and deny access
+    to protected routes from revoked token.
+    """
+    with client.application.app_context():
+        # create and authenticate user
+        url = url_for('user-list')
+        data = json.dumps({
+            'username': credentials['username'],
+            'password': credentials['password']
+        })
+        res = client.post(url, data=data, content_type='application/json')
+        assert res.status_code == 201
+        created_users = models.User.query.all()
+        assert len(created_users) == 1
+        url = url_for('user-auth')
+        res = client.post(url, data=data, content_type='application/json')
+        assert res.status_code == 200
+        token = res.json['access_token']
+        # can acess protected route
+        url = url_for('user-auth', user_id=created_users[0].user_id)
+        res = client.get(
+            url,
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {token}'}
+        )
+        assert res.status_code == 200
+        # logout (revoke access token)
+        url = url_for('api_user_logout')
+        res = client.post(
+            url,
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {token}'}
+        )
+        assert res.status_code == 200
+        # cannot acess protected route after logout
+        url = url_for('user-auth', user_id=created_users[0].user_id)
+        res = client.get(
+            url,
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {token}'}
+        )
+        assert res.status_code == 401

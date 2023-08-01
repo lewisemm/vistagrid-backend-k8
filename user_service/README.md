@@ -10,6 +10,9 @@
 * FLASK_APP # export FLASK_APP="api.py"
 * SERVER_NAME
 * USER_SERVICE_CONFIG_MODULE # e.g export USER_SERVICE_CONFIG_MODULE="user_service.config.config.DevConfig"
+* JWT_ACCESS_TOKEN_EXPIRES_MINUTES
+* REDIS_HOST
+* REDIS_PORT
 
 ### Database Migrations
 Run the following command to initialize the database.
