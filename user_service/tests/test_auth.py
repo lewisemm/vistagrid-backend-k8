@@ -94,12 +94,13 @@ def test_identify_user_from_jwt_no_authorization_header(client):
         assert res.status_code == 401
 
 def test_identify_user_from_jwt_valid_authorization_header(
-        client, existing_user, credentials, redis_mock):
+        client, existing_user, redis_mock):
     """
     Test functionality to identify request owner from request when valid
     `Authorization` header is provided.
     """
     with client.application.app_context():
+        user, credentials = existing_user
         url = url_for('user-auth')
         data = json.dumps({
             'username': credentials['username'],
@@ -115,7 +116,7 @@ def test_identify_user_from_jwt_valid_authorization_header(
         )
         assert res.status_code == 200
         user_id = int(res.json['user_id'] )
-        assert user_id == existing_user.user_id
+        assert user_id == user.user_id
 
 def test_identify_user_from_jwt_invalid_authorization_header(client):
     """

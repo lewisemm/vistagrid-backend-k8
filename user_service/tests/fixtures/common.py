@@ -37,7 +37,7 @@ def existing_user(client, credentials):
         user = models.User(**credentials)
         models.db.session.add(user)
         models.db.session.commit()
-        yield user
+        yield user, credentials
 
 @pytest.fixture
 def redis_mock(mocker):
