@@ -8,85 +8,128 @@ from user_service import models
 from user_service.tests.fixtures.common import (
     client,
     credentials,
-    existing_user
+    existing_user,
+    redis_mock
 )
 
 
 fake = Faker()
 
 
-def test_get_user_details(client, existing_user):
+def login_user(client, credentials):
     with client.application.app_context():
-        url = url_for('user-detail', user_id= existing_user.user_id)
+        url = url_for('user-auth')
+        res = client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(credentials)
+        )
+        return res.json['access_token']
+
+
+def test_get_user_details(client, existing_user, redis_mock):
+    with client.application.app_context():
+        user, credentials = existing_user
+        url = url_for('user-detail', user_id=user.user_id)
         res = client.get(url)
+        assert res.status_code == 401
+        token = login_user(client, credentials)
+        res = client.get(url, headers={'Authorization': f'Bearer {token}'})
         assert res.status_code == 200
-        assert existing_user.username in res.data.decode('utf-8')
+        assert user.username in res.data.decode('utf-8')
 
 
-def test_get_user_details_404(client):
+def test_get_user_details_404(client, existing_user, redis_mock):
     with client.application.app_context():
-        url = url_for('user-detail', user_id= 42)
+        _, credentials = existing_user
+        url = url_for('user-detail', user_id=42)
         res = client.get(url)
+        assert res.status_code == 401
+        token = login_user(client, credentials)
+        res = client.get(url, headers={'Authorization': f'Bearer {token}'})
         assert res.status_code == 404
 
 
-def test_delete_user(client, existing_user):
-    user_id = existing_user.user_id
+
+def test_delete_user(client, existing_user, redis_mock):
+    user, credentials = existing_user
+    user_id = user.user_id
     with client.application.app_context():
-        user = models.User.query.get(user_id)
         assert user != None
         url = url_for('user-detail', user_id=user_id)
         res = client.delete(url)
+        assert res.status_code == 401
+        token = login_user(client, credentials)
+        res = client.delete(url, headers={'Authorization': f'Bearer {token}'})
         assert res.status_code == 204
-        user = models.User.query.get(user_id)
-        assert user == None
+        user_in_db = models.User.query.get(user_id)
+        assert user_in_db == None
 
 
-def test_delete_user_404(client):
+def test_delete_user_404(client, existing_user, redis_mock):
+    user, credentials = existing_user
     with client.application.app_context():
         url = url_for('user-detail', user_id=42)
         res = client.delete(url)
+        assert res.status_code == 401
+        token = login_user(client, credentials)
+        res = client.delete(url, headers={'Authorization': f'Bearer {token}'})
         assert res.status_code == 404
 
 
-def test_edit_user_details(client, existing_user):
+def test_edit_user_details(client, existing_user, redis_mock):
     with client.application.app_context():
-        url = url_for('user-detail', user_id=existing_user.user_id)
+        user, credentials = existing_user
+        url = url_for('user-detail', user_id=user.user_id)
+        data = {'password': fake.password()}
+        assert user.verify_password(credentials['password']) is True
+        assert user.verify_password(data['password']) is False
+        res = client.put(
+            url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+        assert res.status_code == 401
+        token = login_user(client, credentials)
+        res = client.put(
+            url,
+            data=json.dumps(data),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {token}'}
+        )
+        assert res.status_code == 200
+        user_in_db = models.User.query.get(user.user_id)
+        # assert that the password in the data dictionary above is the new
+        # password
+        assert user_in_db.verify_password(data['password']) is True
+        assert user_in_db.verify_password(credentials['password']) is False
+
+
+def test_edit_user_details_404(client, existing_user, redis_mock):
+    with client.application.app_context():
+        url = url_for('user-detail', user_id=42)
         data = {'password': fake.password()}
         res = client.put(
             url,
             data=json.dumps(data),
             content_type='application/json'
         )
-        assert res.status_code == 200
-
-        # refresh existing_user from database.
-        # cannot use models.db.session.refresh(existing_user) because
-        # existing_user was yielded from a fixture that uses different model
-        # session. Because of this, an sqlalchemy.orm.exc.DetachedInstanceError
-        # will be raised.
-        user = models.User.query.get(existing_user.user_id)
-
-        # assert that the password in the data dictionary above is the new
-        # password
-        assert user.verify_password(data['password']) is True
-
-
-def test_edit_user_details_404(client):
-    with client.application.app_context():
-        url = url_for('user-detail', user_id=42)
-        data = {'password': fake.password()}
+        assert res.status_code == 401
+        _, credentials = existing_user
+        token = login_user(client, credentials)
         res = client.put(
             url,
             data=json.dumps(data),
-            content_type='application/json'
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {token}'}
         )
         assert res.status_code == 404
 
 
 def test_edit_user_details_missing_password_field(client, existing_user):
     with client.application.app_context():
-        url = url_for('user-detail', user_id= existing_user.user_id)
+        user, _ = existing_user
+        url = url_for('user-detail', user_id=user.user_id)
         data = {'random_field': fake.password()}
         res = client.put(
             url,
