@@ -2,6 +2,7 @@ from flask import jsonify
 from flask_restful import reqparse, Resource
 from flask_apispec import use_kwargs, marshal_with, doc
 from flask_apispec.views import MethodResource
+from flask_jwt_extended import jwt_required
 
 from user_service.models import User as UserModel, db
 from user_service.schemas.user import UserSchema, PasswordSchema
@@ -24,6 +25,7 @@ class User(MethodResource, Resource):
 
     @doc(description='Get user details for User with <user_id>.')
     @marshal_with(UserSchema, code=201)
+    @jwt_required()
     def get(self, user_id):
         user = UserModel.query.get(user_id)
         if user:
@@ -33,6 +35,7 @@ class User(MethodResource, Resource):
     @doc(description='Update password for User with <user_id>.')
     @use_kwargs(PasswordSchema, location=('json'))
     @marshal_with(UserSchema, code=200)
+    @jwt_required()
     def put(self, user_id, **kwargs):
         args = self.parser.parse_args()
         user = UserModel.query.get(user_id)
@@ -44,8 +47,9 @@ class User(MethodResource, Resource):
             return {'success': 'password successfully updated.'}, 200
         return USER_NOT_FOUND, 404
 
-    @doc(description='Delete User with <user_id>.')
+    @doc(description='Delete User of <user_id>.')
     @marshal_with(UserSchema, code=204)
+    @jwt_required()
     def delete(self, user_id):
         user = UserModel.query.get(user_id)
         if user:
