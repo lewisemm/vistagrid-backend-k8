@@ -16,15 +16,17 @@ from user_service.tests.fixtures.common import (
 fake = Faker()
 
 
-def login_user(client, credentials):
+@pytest.fixture
+def logged_in_user(client, existing_user):
     with client.application.app_context():
         url = url_for('user-auth')
+        _, credentials = existing_user
         res = client.post(
             url,
             content_type='application/json',
             data=json.dumps(credentials)
         )
-        return res.json['access_token']
+        return res.json['access_token'], existing_user
 
 
 def test_get_user_details(client, existing_user, redis_mock):
