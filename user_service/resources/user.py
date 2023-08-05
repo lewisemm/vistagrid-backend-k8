@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required
 
 from user_service.models import User as UserModel, db
 from user_service.schemas.user import UserSchema, PasswordSchema
+from user_service.resources.decorators import is_owner
 
 USER_NOT_FOUND = {'error': 'User not found'}
 
@@ -26,6 +27,7 @@ class User(MethodResource, Resource):
     @doc(description='Get user details for User with <user_id>.')
     @marshal_with(UserSchema, code=201)
     @jwt_required()
+    @is_owner
     def get(self, user_id):
         user = UserModel.query.get(user_id)
         if user:
@@ -36,6 +38,7 @@ class User(MethodResource, Resource):
     @use_kwargs(PasswordSchema, location=('json'))
     @marshal_with(UserSchema, code=200)
     @jwt_required()
+    @is_owner
     def put(self, user_id, **kwargs):
         args = self.parser.parse_args()
         user = UserModel.query.get(user_id)
@@ -50,6 +53,7 @@ class User(MethodResource, Resource):
     @doc(description='Delete User of <user_id>.')
     @marshal_with(UserSchema, code=204)
     @jwt_required()
+    @is_owner
     def delete(self, user_id):
         user = UserModel.query.get(user_id)
         if user:
