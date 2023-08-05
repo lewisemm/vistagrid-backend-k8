@@ -8,8 +8,6 @@ from user_service.models import User as UserModel, db
 from user_service.schemas.user import UserSchema, PasswordSchema
 from user_service.resources.decorators import is_owner
 
-USER_NOT_FOUND = {'error': 'User not found'}
-
 
 class User(MethodResource, Resource):
     """
@@ -30,9 +28,8 @@ class User(MethodResource, Resource):
     @is_owner
     def get(self, user_id):
         user = UserModel.query.get(user_id)
-        if user:
-            return UserSchema().dump(user), 200
-        return USER_NOT_FOUND, 404
+        return UserSchema().dump(user), 200
+
 
     @doc(description='Update password for User with <user_id>.')
     @use_kwargs(PasswordSchema, location=('json'))
@@ -42,25 +39,24 @@ class User(MethodResource, Resource):
     def put(self, user_id, **kwargs):
         args = self.parser.parse_args()
         user = UserModel.query.get(user_id)
-        if user:
-            hashed_password = user.hash_password(args['password'])
-            user.password = hashed_password or user.password
-            db.session.add(user)
-            db.session.commit()
-            return {'success': 'password successfully updated.'}, 200
-        return USER_NOT_FOUND, 404
+        hashed_password = user.hash_password(args['password'])
+        user.password = hashed_password or user.password
+        db.session.add(user)
+        db.session.commit()
+        return {'success': 'password successfully updated.'}, 200
 
     @doc(description='Delete User of <user_id>.')
     @marshal_with(UserSchema, code=204)
     @jwt_required()
     @is_owner
     def delete(self, user_id):
+        # TODO: Add current user JWT to cache after user is deleted.
+        # This should prevent the use of a non-expired JWT that does not
+        # have a matching user record in the database.
         user = UserModel.query.get(user_id)
-        if user:
-            db.session.delete(user)
-            db.session.commit()
-            return '', 204
-        return USER_NOT_FOUND, 404
+        db.session.delete(user)
+        db.session.commit()
+        return '', 204
 
 
 class UserList(MethodResource, Resource):
