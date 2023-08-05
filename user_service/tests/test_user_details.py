@@ -116,3 +116,36 @@ def test_edit_user_details_missing_password_field(client, logged_in_user):
             headers={'Authorization': f'Bearer {token}'}
         )
         assert res.status_code == 422
+
+
+def test_delete_user_not_owner(client, logged_in_user, redis_mock):
+    with client.application.app_context():
+        token, _ = logged_in_user
+        url = url_for('user-detail', user_id=42)
+        res = client.delete(url, headers={'Authorization': f'Bearer {token}'})
+        assert res.status_code == 403
+
+
+def test_get_user_details_not_owner(client, redis_mock, logged_in_user):
+    with client.application.app_context():
+        token, _ = logged_in_user
+        url = url_for('user-detail', user_id=42)
+        res = client.get(url, headers={'Authorization': f'Bearer {token}'})
+        assert res.status_code == 403
+
+
+def  test_put_user_details_not_owner(client, redis_mock, logged_in_user):
+    with client.application.app_context():
+        token, existing_user = logged_in_user
+        user, credentials = existing_user
+        url = url_for('user-detail', user_id=42)
+        data = {'password': fake.password()}
+        assert user.verify_password(credentials['password']) is True
+        assert user.verify_password(data['password']) is False
+        res = client.put(
+            url,
+            data=json.dumps(data),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {token}'}
+        )
+        assert res.status_code == 403
