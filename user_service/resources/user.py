@@ -1,12 +1,13 @@
-from flask import jsonify
+from flask import current_app
 from flask_restful import reqparse, Resource
 from flask_apispec import use_kwargs, marshal_with, doc
 from flask_apispec.views import MethodResource
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt
 
 from user_service.models import User as UserModel, db
 from user_service.schemas.user import UserSchema, PasswordSchema
 from user_service.resources.decorators import is_owner
+from user_service.decorators.cache import get_redis_connection
 
 
 class User(MethodResource, Resource):
@@ -48,14 +49,15 @@ class User(MethodResource, Resource):
     @doc(description='Delete User of <user_id>.')
     @marshal_with(UserSchema, code=204)
     @jwt_required()
+    @get_redis_connection
     @is_owner
-    def delete(self, user_id):
-        # TODO: Add current user JWT to cache after user is deleted.
-        # This should prevent the use of a non-expired JWT that does not
-        # have a matching user record in the database.
+    def delete(self, user_id, redis_conn=None):
         user = UserModel.query.get(user_id)
         db.session.delete(user)
         db.session.commit()
+        jti = get_jwt()['jti']
+        ttl = current_app.config['JWT_ACCESS_TOKEN_EXPIRES']
+        redis_conn.get('redis').set(jti, jti, ttl)
         return '', 204
 
 
