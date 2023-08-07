@@ -1,6 +1,7 @@
 import os
 import pytest
 
+from collections import UserDict
 from faker import Faker
 
 os.environ['USER_SERVICE_CONFIG_MODULE'] = 'user_service.config.test.TestConfig'
@@ -41,13 +42,13 @@ def existing_user(client, credentials):
 
 @pytest.fixture
 def redis_mock(mocker):
-    cache = {}
-    def setter(key, value):
-        cache[key] = value
-        return True
-    def getter(key):
-        return cache.get(key, None)
-    redis = mocker.patch('user_service.api.redis_conn')
-    redis.set.side_effect = lambda key, value, exp: setter(key, value)
-    redis.get.side_effect = lambda key: getter(key)
+    class CacheDict(UserDict):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def set(self, key, val, ttl):
+            self.data[key] = val
+    cache = CacheDict()
+    redis = mocker.patch('user_service.decorators.cache.CACHE_CONNECTION')
+    redis.get.side_effect = lambda key: cache
     return redis

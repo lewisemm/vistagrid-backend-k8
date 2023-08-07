@@ -11,6 +11,7 @@ from flask_restful import Api
 from user_service.application import app
 from user_service.resources.user import User as UserResource, UserList
 from user_service.resources.auth import UserAuth
+from user_service.decorators.cache import get_redis_connection
 
 api = Api(app)
 jwt = JWTManager(app)
@@ -25,11 +26,6 @@ app.config.update({
     'APISPEC_SWAGGER_UI_URL': '/swagger-ui/'
 })
 docs = FlaskApiSpec(app)
-redis_conn = redis.Redis(
-    host=os.environ['REDIS_HOST'],
-    port=os.environ['REDIS_PORT'],
-    decode_responses=True
-)
 
 
 @app.route('/')
@@ -38,18 +34,20 @@ def hello_world():
 
 
 @jwt.token_in_blocklist_loader
-def check_if_token_revoked(jwt_header, jwt_payload):
+@get_redis_connection
+def check_if_token_revoked(jwt_header, jwt_payload, redis_conn=None):
     jti = jwt_payload["jti"]
-    token_in_redis = redis_conn.get(jti)
+    token_in_redis = redis_conn.get('redis').get(jti)
     return token_in_redis is not None
 
 
 @app.route('/api/user/logout', methods=['POST'])
 @jwt_required()
-def api_user_logout():
+@get_redis_connection
+def api_user_logout(redis_conn=None):
     jti = get_jwt()['jti']
     ttl = current_app.config['JWT_ACCESS_TOKEN_EXPIRES']
-    redis_conn.set(jti, jti, ttl)
+    redis_conn.get('redis').set(jti, jti, ttl)
     return { 'message': 'User logged out' }, 200
 
 
