@@ -48,16 +48,7 @@ def redis_mock(mocker):
 
         def set(self, key, val, ttl):
             self.data[key] = val
-
     cache = CacheDict()
-    def setter(key, value):
-        cache.set(key, value)
-    def getter(key):
-        if key == 'redis':
-            return cache
-        return cache.get(key)
-
     redis = mocker.patch('user_service.decorators.cache.CACHE_CONNECTION')
-    redis.set.side_effect = lambda key, value, exp: setter(key, value)
-    redis.get.side_effect = lambda key: getter(key)
+    redis.get.side_effect = lambda key: cache
     return redis
