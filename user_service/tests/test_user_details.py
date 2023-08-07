@@ -134,7 +134,7 @@ def test_get_user_details_not_owner(client, redis_mock, logged_in_user):
         assert res.status_code == 403
 
 
-def  test_put_user_details_not_owner(client, redis_mock, logged_in_user):
+def test_put_user_details_not_owner(client, redis_mock, logged_in_user):
     with client.application.app_context():
         token, existing_user = logged_in_user
         user, credentials = existing_user
@@ -149,3 +149,14 @@ def  test_put_user_details_not_owner(client, redis_mock, logged_in_user):
             headers={'Authorization': f'Bearer {token}'}
         )
         assert res.status_code == 403
+
+def test_delete_user_token_not_reusable(client, logged_in_user, redis_mock):
+    with client.application.app_context():
+        token, existing_user = logged_in_user
+        user, credentials = existing_user
+        url = url_for('user-detail', user_id=user.user_id)
+        res = client.delete(url, headers={'Authorization': f'Bearer {token}'})
+        assert res.status_code == 204
+        # once user is deleted, JWT token cannot be used anymore
+        res = client.get(url, headers={'Authorization': f'Bearer {token}'})
+        assert res.status_code == 401
