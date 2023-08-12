@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt
 
 from user_service.models import User as UserModel, db
 from user_service.schemas.user import UserSchema, PasswordSchema
-from user_service.resources.decorators import is_owner
+from user_service.decorators.auth import is_owner
 from user_service.decorators.cache import get_redis_connection
 
 
