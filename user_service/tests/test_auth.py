@@ -147,7 +147,9 @@ def test_revoke_token_via_logout(client, credentials, redis_mock):
         })
         res = client.post(url, data=data, content_type='application/json')
         assert res.status_code == 201
-        created_users = models.User.query.all()
+        created_users = models.db.session.scalars(
+            models.db.select(models.User)
+        ).all()
         assert len(created_users) == 1
         url = url_for('user-auth')
         res = client.post(url, data=data, content_type='application/json')

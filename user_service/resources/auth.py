@@ -6,7 +6,7 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from flask_restful import reqparse, Resource
-from user_service.models import User as UserModel
+from user_service.models import User as UserModel, db
 from user_service.schemas.user import UserSchema, TokenSchema
 
 
@@ -27,7 +27,9 @@ class UserAuth(MethodResource, Resource):
         )
     
     def user_exists(self, username):
-        user = UserModel.query.filter_by(username=username).first()
+        user = db.session.scalar(
+            db.select(UserModel).where(UserModel.username==username)
+        )
         return user
 
     @doc(description='Authenticate a User with `username` and `password` details.')

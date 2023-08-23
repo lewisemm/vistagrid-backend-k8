@@ -55,7 +55,11 @@ def test_delete_user(client, logged_in_user, redis_mock):
         url = url_for('user-detail', user_id=user.user_id)
         res = client.delete(url, headers={'Authorization': f'Bearer {token}'})
         assert res.status_code == 204
-        user_in_db = models.User.query.get(user.user_id)
+        user_in_db = models.db.session.scalar(
+            models.db.select(models.User).where(
+                models.User.user_id==user.user_id
+            )
+        )
         assert user_in_db == None
 
 
@@ -82,7 +86,11 @@ def test_edit_user_details(client, logged_in_user, redis_mock):
             headers={'Authorization': f'Bearer {token}'}
         )
         assert res.status_code == 200
-        user_in_db = models.User.query.get(user.user_id)
+        user_in_db = models.db.session.scalar(
+            models.db.select(models.User).where(
+                models.User.user_id==user.user_id
+            )
+        )
         # assert that the password in the data dictionary above is the new
         # password
         assert user_in_db.verify_password(data['password']) is True
