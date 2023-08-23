@@ -28,7 +28,9 @@ class User(MethodResource, Resource):
     @jwt_required()
     @is_owner
     def get(self, user_id):
-        user = UserModel.query.get(user_id)
+        user = db.session.scalar(
+            db.select(UserModel).where(UserModel.user_id==user_id)
+        )
         return UserSchema().dump(user), 200
 
 
@@ -39,7 +41,9 @@ class User(MethodResource, Resource):
     @is_owner
     def put(self, user_id, **kwargs):
         args = self.parser.parse_args()
-        user = UserModel.query.get(user_id)
+        user = db.session.scalar(
+            db.select(UserModel).where(UserModel.user_id==user_id)
+        )
         hashed_password = user.hash_password(args['password'])
         user.password = hashed_password or user.password
         db.session.add(user)
@@ -52,7 +56,9 @@ class User(MethodResource, Resource):
     @get_redis_connection
     @is_owner
     def delete(self, user_id, redis_conn=None):
-        user = UserModel.query.get(user_id)
+        user = db.session.scalar(
+            db.select(UserModel).where(UserModel.user_id==user_id)
+        )
         db.session.delete(user)
         db.session.commit()
         jti = get_jwt()['jti']
@@ -78,7 +84,9 @@ class UserList(MethodResource, Resource):
         )
 
     def user_exists(self, username):
-        user = UserModel.query.filter_by(username=username).first()
+        user = db.session.scalar(
+            db.select(UserModel).where(UserModel.username==username)
+        )
         return True if user else False
 
     @doc(description='Create a new user with `username` and `password` data.')

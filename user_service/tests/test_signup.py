@@ -23,7 +23,11 @@ def test_signup(client, credentials):
         )
         assert res.status_code == 201
         # assert that user has been persisted in the database
-        saved_user = models.User.query.all()[0]
+        saved_user = models.db.session.scalars(
+            models.db.select(models.User)
+        ).all()
+        assert len(saved_user) == 1
+        saved_user = saved_user[0]
         assert saved_user.username == credentials['username']
         # assert that the password has not been persisted in plain-text form
         assert saved_user.password != credentials['password']
@@ -39,7 +43,9 @@ def test_signup_missing_username(client):
             url, data=json.dumps(data), content_type='application/json')
         assert res.status_code == 400
         # assert that database has remained unchanged
-        saved_user = models.User.query.all()
+        saved_user = models.db.session.scalars(
+            models.db.select(models.User)
+        ).all()
         assert len(saved_user) == 0
 
 
@@ -53,7 +59,9 @@ def test_signup_missing_password(client):
             url, data=json.dumps(data), content_type='application/json')
         assert res.status_code == 400
         # assert that database has remained unchanged
-        saved_user = models.User.query.all()
+        saved_user = models.db.session.scalars(
+            models.db.select(models.User)
+        ).all()
         assert len(saved_user) == 0
 
 
@@ -68,7 +76,9 @@ def test_signup_missing_username_and_password(client):
             url, data=json.dumps(data), content_type='application/json')
         assert res.status_code == 422
         # assert that database has remained unchanged
-        saved_user = models.User.query.all()
+        saved_user = models.db.session.scalars(
+            models.db.select(models.User)
+        ).all()
         assert len(saved_user) == 0
 
 
