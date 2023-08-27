@@ -15,17 +15,17 @@ from user_service.decorators.cache import get_redis_connection
 
 def create_app(test_config=False):
     app = Flask(__name__)
-    app.config.from_object(os.environ['USER_SERVICE_CONFIG_MODULE'])
+    if test_config:
+        app.config.from_object('user_service.config.config.TestConfig')
+    else:
+        app.config.from_object(os.environ['USER_SERVICE_CONFIG_MODULE'])
 
     from user_service.models import db
 
     with app.app_context():
         db.init_app(app)
         migrate = Migrate(app, db)
-    if test_config:
-        app.config.from_object('user_service.config.config.TestConfig')
-        with app.app_context():
-            db.create_all()
+        db.create_all()
     api = Api(app)
     jwt = JWTManager(app)
     app.config.update({
