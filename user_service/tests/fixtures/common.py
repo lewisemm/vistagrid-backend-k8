@@ -4,8 +4,6 @@ import pytest
 from collections import UserDict
 from faker import Faker
 
-os.environ['USER_SERVICE_CONFIG_MODULE'] = 'user_service.config.test.TestConfig'
-
 from user_service import models
 from user_service.api import api
 
