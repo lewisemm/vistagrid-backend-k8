@@ -4,12 +4,11 @@
 ### Environment Variables
 * SQLALCHEMY_DATABASE_URI
 * JWT_SECRET_KEY
-* POSTGRES_PASSWORD
-* POSTGRES_HOST
-* POSTGRES_DB
-* FLASK_APP # export FLASK_APP="api.py"
 * SERVER_NAME
-* USER_SERVICE_CONFIG_MODULE # e.g export USER_SERVICE_CONFIG_MODULE="user_service.config.config.DevConfig"
+* USER_SERVICE_CONFIG_MODULE - The configuration class to use, for example.
+    ```sh
+    export USER_SERVICE_CONFIG_MODULE="user_service.config.dev.DevConfig"
+    ```
 * JWT_ACCESS_TOKEN_EXPIRES_MINUTES
 * REDIS_HOST
 * REDIS_PORT
@@ -27,6 +26,9 @@ Run the app by issuing the following command.
 ```sh
 flask run
 ```
+
+### Documentation
+The API's documentation can be accessed via http://localhost:5000/swagger-ui/
 
 ## Tests
 Tests can be run with the following command.
