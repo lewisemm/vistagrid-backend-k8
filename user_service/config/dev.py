@@ -1,9 +1,7 @@
-import os
 import datetime
+import os
 
-
-class CommonConfig(object):
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+from user_service.config.base import CommonConfig
 
 
 class DevConfig(CommonConfig):
@@ -12,10 +10,3 @@ class DevConfig(CommonConfig):
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(
         minutes=int(os.environ['JWT_ACCESS_TOKEN_EXPIRES_MINUTES'])
     )
-
-
-class TestConfig(CommonConfig):
-    TESING = True
-    JWT_SECRET_KEY = 'super secret'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-    SERVER_NAME = os.environ['SERVER_NAME']

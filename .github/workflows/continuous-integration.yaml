@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SERVER_NAME: 'localhost:5000'
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
       REDIS_HOST: 'redis-host-has-been-mocked'
       REDIS_PORT: 1234
     steps:

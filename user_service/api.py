@@ -16,7 +16,7 @@ from user_service.decorators.cache import get_redis_connection
 def create_app(test_config=False):
     app = Flask(__name__)
     if test_config:
-        app.config.from_object('user_service.config.config.TestConfig')
+        app.config.from_object('user_service.config.test.TestConfig')
     else:
         app.config.from_object(os.environ['USER_SERVICE_CONFIG_MODULE'])
 
