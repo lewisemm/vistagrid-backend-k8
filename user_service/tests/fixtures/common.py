@@ -5,22 +5,23 @@ from collections import UserDict
 from faker import Faker
 
 from user_service import models
-from user_service.api import api
+from user_service.api import create_app
 
 fake = Faker()
 
 
 @pytest.fixture
 def client():
-    with api.app.app_context():
+    app = create_app(test_config=True)
+    with app.app_context():
         models.db.create_all()
 
-    with api.app.test_request_context() as context:
+    with app.test_request_context() as context:
         context.push()
-        yield api.app.test_client()
+        yield app.test_client()
         context.pop()
 
-    with api.app.app_context():
+    with app.app_context():
         models.db.drop_all()
 
 @pytest.fixture
