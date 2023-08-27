@@ -5,7 +5,7 @@ from collections import UserDict
 from faker import Faker
 
 from user_service import models
-from user_service.api import create_app
+from user_service.app import create_app
 
 fake = Faker()
 
