@@ -1,13 +1,8 @@
-import os
-
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from passlib.hash import bcrypt
 
-from user_service.application import app
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+db = SQLAlchemy()
 
 
 class User(db.Model):

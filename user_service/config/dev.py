@@ -1,10 +1,7 @@
-import os
 import datetime
+import os
 
-
-class CommonConfig(object):
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-
+from user_service.config.base import CommonConfig
 
 
 class DevConfig(CommonConfig):
