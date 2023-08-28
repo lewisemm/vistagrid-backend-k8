@@ -3,6 +3,7 @@ import pytest
 
 from flask import url_for
 from faker import Faker
+from flask_jwt_extended import decode_token
 
 from user_service import models
 from user_service.tests.fixtures.common import (
@@ -168,3 +169,43 @@ def test_delete_user_token_not_reusable(client, logged_in_user, redis_mock):
         # once user is deleted, JWT token cannot be used anymore
         res = client.get(url, headers={'Authorization': f'Bearer {token}'})
         assert res.status_code == 401
+
+def test_delete_user_when_multiple_valid_jwt_tokens_exist(
+        client, logged_in_user, redis_mock
+    ):
+    """
+    Test that the delete user functionality will handle scenario where user
+    is already deleted but other valid and non blacklisted jwts belonging to
+    said user attempt to delete again.
+    """
+    with client.application.app_context():
+        first_valid_token, existing_user = logged_in_user
+        user, credentials = existing_user
+        # generate another valid token,
+        # (simulates a user logging in multiple times while previous tokens are
+        # still valid and not blacklisted)
+        url = url_for('user-auth')
+        res = client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(credentials)
+        )
+        assert res.status_code == 200
+        second_valid_token = res.json['access_token']
+        # assert tokens are different but they belong to same user
+        assert first_valid_token != second_valid_token
+        assert decode_token(first_valid_token)['sub'] == \
+            decode_token(second_valid_token)['sub']
+        url = url_for('user-detail', user_id=user.user_id)
+        res = client.delete(
+            url,
+            headers={'Authorization': f'Bearer {first_valid_token}'}
+        )
+        assert res.status_code == 204
+        # first_valid_token blacklisted at this point, but second_valid_token is
+        # still active
+        res = client.delete(
+            url,
+            headers={'Authorization': f'Bearer {second_valid_token}'}
+        )
+        assert res.status_code == 404
