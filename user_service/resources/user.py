@@ -59,12 +59,14 @@ class User(MethodResource, Resource):
         user = db.session.scalar(
             db.select(UserModel).where(UserModel.user_id==user_id)
         )
-        db.session.delete(user)
-        db.session.commit()
-        jti = get_jwt()['jti']
-        ttl = current_app.config['JWT_ACCESS_TOKEN_EXPIRES']
-        redis_conn.get('redis').set(jti, jti, ttl)
-        return '', 204
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            jti = get_jwt()['jti']
+            ttl = current_app.config['JWT_ACCESS_TOKEN_EXPIRES']
+            redis_conn.get('redis').set(jti, jti, ttl)
+            return '', 204
+        return {'error': 'User not found'}, 404
 
 
 class UserList(MethodResource, Resource):
