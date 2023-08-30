@@ -26,13 +26,6 @@ python manage.py migrate
 
 ## Running the app.
 
-### Starting the user_service
-The `user_service` needs to be running independently to facilitate verification of jwt tokens.
-
-The root url of the `user_service` also needs to be provided as the `AUTH_SERVICE_URL` environment variable.
-
-Start instructions can be found in the `user_service` [README](../user_service/README.md).
-
 ### Starting Celery
 Celery needs to be running as a background service to facilitate asynchronous photo uploads to s3.
 
