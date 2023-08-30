@@ -13,7 +13,6 @@
 ### Background Services
 The following background services are required to run the app.
 
-* `user_service` - required to verify jwt tokens.
 * A database e.g. MySQL, specified by `DATABASE_URL` environment variable.
 * A message broker url e.g. RabbitMQ, specified by `CELERY_BROKER_URL` environment variable.
 
