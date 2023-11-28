@@ -2,6 +2,7 @@ from flask_apispec.views import MethodResource
 from flask_apispec import use_kwargs, marshal_with, doc
 from flask_jwt_extended import (
     create_access_token,
+    create_refresh_token,
     jwt_required,
     get_jwt_identity
 )
@@ -44,8 +45,13 @@ class UserAuth(MethodResource, Resource):
             return {
                 'error': f'Invalid password for user {args["username"]}.'
             }, 401
-        access_token = create_access_token(identity=f'{user.user_id}')
-        return {'access_token': access_token}, 200
+        identity = f'{user.user_id}'
+        access_token = create_access_token(identity=identity)
+        refresh_token = create_refresh_token(identity=identity)
+        return {
+            'access_token': access_token,
+            'refresh_token': refresh_token
+        }, 200
 
     @doc(description='Get `username` of current authenticated request.')
     @jwt_required()
