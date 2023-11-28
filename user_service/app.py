@@ -4,7 +4,9 @@ from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from flask import Flask, current_app
 from flask_apispec.extension import FlaskApiSpec
-from flask_jwt_extended import JWTManager, get_jwt, jwt_required
+from flask_jwt_extended import (
+    JWTManager, get_jwt, jwt_required, get_jwt_identity, create_access_token
+)
 from flask_restful import Api
 from flask_migrate import Migrate
 
@@ -49,13 +51,26 @@ def create_app(test_config=False):
 
 
     @app.route('/api/user/logout', methods=['POST'])
-    @jwt_required()
+    @jwt_required(verify_type=False)
     @get_redis_connection
     def api_user_logout(redis_conn=None):
-        jti = get_jwt()['jti']
+        # The client needs to send two requests to this endpoint.
+        # One request to revoke the access token.
+        # The other request to revoke the refresh token.
+        token = get_jwt()
+        jti = token['jti']
+        token_type = token['type']
         ttl = current_app.config['JWT_ACCESS_TOKEN_EXPIRES']
         redis_conn.get('redis').set(jti, jti, ttl)
-        return { 'message': 'User logged out' }, 200
+        message = f'{token_type.capitalize()} token successfully revoked.'
+        return { 'message': message }, 200
+
+    @app.route('/api/token/refresh', methods=['POST'])
+    @jwt_required(refresh=True)
+    def refresh():
+        identity = get_jwt_identity()
+        access_token = create_access_token(identity=identity)
+        return { 'access_token': access_token }, 200
 
 
     api.add_resource(UserAuth, '/api/user/auth', endpoint='user-auth')

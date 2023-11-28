@@ -10,3 +10,4 @@ class PasswordSchema(ma.Schema):
 
 class TokenSchema(ma.Schema):
     access_token = ma.fields.Str(required=True)
+    refresh_token = ma.fields.Str(required=True)
