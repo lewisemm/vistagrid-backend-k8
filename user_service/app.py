@@ -65,6 +65,12 @@ def create_app(test_config=False):
         message = f'{token_type.capitalize()} token successfully revoked.'
         return { 'message': message }, 200
 
+    @app.route('/api/token/refresh', methods=['POST'])
+    @jwt_required(refresh=True)
+    def refresh():
+        identity = get_jwt_identity()
+        access_token = create_access_token(identity=identity)
+        return { 'access_token': access_token }, 200
 
 
     api.add_resource(UserAuth, '/api/user/auth', endpoint='user-auth')
