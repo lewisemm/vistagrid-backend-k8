@@ -10,3 +10,6 @@ class DevConfig(CommonConfig):
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(
         minutes=int(os.environ['JWT_ACCESS_TOKEN_EXPIRES_MINUTES'])
     )
+    JWT_REFRESH_TOKEN_EXPIRES = datetime.timedelta(
+        days=int(os.environ['JWT_REFRESH_TOKEN_EXPIRES_DAYS'])
+    )
