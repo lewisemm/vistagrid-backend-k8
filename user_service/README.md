@@ -4,6 +4,10 @@
 ### Environment Variables
 * SQLALCHEMY_DATABASE_URI
 * JWT_SECRET_KEY
+* FLASK_APP - set to the name of the file containing the flask app.
+    ```sh
+    export FLASK_APP="app.py"
+    ```
 * SERVER_NAME
 * USER_SERVICE_CONFIG_MODULE - The configuration class to use, for example.
     ```sh
