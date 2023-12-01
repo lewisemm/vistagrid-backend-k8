@@ -2,13 +2,17 @@ import os
 
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
-from flask import Flask, current_app
+from flask import Flask, current_app, g
 from flask_apispec.extension import FlaskApiSpec
 from flask_jwt_extended import (
     JWTManager, get_jwt, jwt_required, get_jwt_identity, create_access_token
 )
 from flask_restful import Api
 from flask_migrate import Migrate
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 
 from user_service.resources.user import User as UserResource, UserList
 from user_service.resources.auth import UserAuth
@@ -21,6 +25,16 @@ def create_app(test_config=False):
         app.config.from_object('user_service.config.test.TestConfig')
     else:
         app.config.from_object(os.environ['USER_SERVICE_CONFIG_MODULE'])
+
+    limiter = Limiter(
+        get_remote_address,
+        app=app,
+        # set this to prod appropriate url via environment variable or config class
+        storage_uri="memory://",
+    )
+    @app.before_request
+    def set_limiter():
+        g.limiter = limiter
 
     from user_service.models import db
 
