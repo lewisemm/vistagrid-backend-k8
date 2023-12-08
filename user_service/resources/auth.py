@@ -9,7 +9,7 @@ from flask_jwt_extended import (
 from flask_restful import reqparse, Resource
 from user_service.models import User as UserModel, db
 from user_service.schemas.user import UserSchema, TokenSchema
-from user_service.decorators.rate_limiter import jwt_limiter
+from user_service.decorators.rate_limiter import rate_limit
 
 
 class UserAuth(MethodResource, Resource):
@@ -37,7 +37,7 @@ class UserAuth(MethodResource, Resource):
     @doc(description='Authenticate a User with `username` and `password` details.')
     @use_kwargs(UserSchema, location=('json'))
     @marshal_with(TokenSchema, code=200)
-    @jwt_limiter
+    @rate_limit('2/15 minutes')
     def post(self, **kwargs):
         args = self.parser.parse_args()
         user = self.user_exists(args['username'])
