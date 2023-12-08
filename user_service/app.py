@@ -17,7 +17,7 @@ from flask_limiter.util import get_remote_address
 from user_service.resources.user import User as UserResource, UserList
 from user_service.resources.auth import UserAuth
 from user_service.decorators.cache import get_redis_connection
-from user_service.decorators.rate_limiter import jwt_limiter
+from user_service.decorators.rate_limiter import rate_limit
 
 
 def create_app(test_config=False):
@@ -82,7 +82,7 @@ def create_app(test_config=False):
 
     @app.route('/api/token/refresh', methods=['POST'])
     @jwt_required(refresh=True)
-    @jwt_limiter
+    @rate_limit('2/15 minutes')
     def refresh():
         identity = get_jwt_identity()
         access_token = create_access_token(identity=identity)
